@@ -11,7 +11,7 @@ spring:
     config:
       server:
         git:
-          uri: https://github.com/yonggyo1125/project-configs
+          uri: https://github.com/yonggyo1125/spartahub_6th
           default-label: main
           search-paths:
             - configs/common
@@ -19,3 +19,20 @@ spring:
             - configs/{application}
           basedir: configs
           clone-on-start: true
+
+eureka:
+  instance:
+    prefer-ip-address: false
+    hostname: ${HOSTNAME:localhost}
+
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: ${EUREKA_URL:http://localhost:13101/eureka/}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: refresh,health,info,metrics
