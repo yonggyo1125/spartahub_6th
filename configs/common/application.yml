@@ -1,7 +1,84 @@
+spring:
+  cloud:
+    loadbalancer:
+      ribbon:
+        enabled: false # Netflix Ribbon 대신 Spring Cloud LoadBalancer 사용
 
+    circuitbreaker:
+      resilience4j:
+        enabled: true  # Resilience4j 회로 차단기 활성화
+
+        # 공통 템플릿(모든 인스턴스의 기본 값)
+        configs:
+          default: # 기본 회로 차단기 설정
+            slidingWindowType: COUNT_BASED  # 호출 횟수 기반으로 슬라이딩 윈도우 설정 (TIME_BASED도 가능)
+            slidingWindowSize: 100  # 상태 결정을 위해 고려할 최근 호출 수
+            minimumNumberOfCalls: 10  # 회로 차단기가 결정을 내리기 위한 최소 호출 수
+            permittedNumberOfCallsInHalfOpenState: 10  # 반개방 상태에서 허용되는 호출 수
+            failureRateThreshold: 50  # 실패율이 50%를 초과하면 회로 차단 (% 기준)
+            waitDurationInOpenState: 30s  # 회로가 열린 상태로 유지되는 시간 (30초)
+            recordExceptions: # 실패로 간주할 예외 목록
+              - java.lang.RuntimeException
+              - org.springframework.web.client.HttpServerErrorException
+
+feign:
+  client:
+    default: # 공통 설정
+      connectTimeout: 5000
+      readTimeout: 5000
+      loggerLevel: full
+
+
+# Resilience4j 개별 모듈 설정 (Retry, Bulkhead, RateLimiter)
+resilience4j:
+  retry:  # 재시도 설정
+    configs:
+      default:  # 기본 재시도 설정
+        maxAttempts: 3  # 최대 3회 재시도
+        waitDuration: 1s  # 재시도 간 1초 대기
+        enableExponentialBackoff: true  # 지수 백오프 활성화 (재시도마다 대기 시간 증가)
+        exponentialBackoffMultiplier: 2.0  # 각 재시도마다 대기 시간이 2배로 증가
+        retryExceptions:  # 재시도할 예외 목록
+          - java.lang.RuntimeException
+
+  bulkhead:  # 벌크헤드 설정 (동시 호출 제한)
+    configs:
+      default:  # 기본 벌크헤드 설정
+        type: THREADPOOL  # 스레드풀 타입 벌크헤드 사용 (SEMAPHORE 대신)
+        coreThreadPoolSize: 5  # 스레드풀의 기본 스레드 수 (항상 활성 상태로 유지)
+        maxThreadPoolSize: 10  # 스레드풀의 최대 스레드 수 (부하 증가 시 확장)
+        queueCapacity: 50  # 모든 스레드가 사용 중일 때 대기할 수 있는 요청 수
+
+  ratelimiter:  # 속도 제한 설정
+    configs:
+      default:  # 기본 속도 제한 설정
+        limitForPeriod: 50  # 주기당 최대 50개 요청 허용
+        limitRefreshPeriod: 1s  # 제한이 1초마다 초기화됨
+        timeoutDuration: 0ms  # 허가 대기 시간 (0ms는 대기 없이 즉시 거부)
+
+
+# OPEN DOC API 설정
+springdoc:
+  version: '1.0.0'
+  api-docs:
+    path: /v3/api-docs
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json
+  swagger-ui:
+    operations-sorter: alpha
+    tags-sorter: alpha
+    path: /api-docs.html
+    disable-swagger-default-url: true
+    doc-expansion:
+  paths-to-match:
+    - /**
 
 management:
   endpoints:
     web:
       exposure:
         include: refresh,health,info,metrics
+
+logging:
+  level:
+    feign: DEBUG
