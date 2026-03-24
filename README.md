@@ -6,10 +6,10 @@
 - [게이트웨이 서버](https://github.com/yonggyo1125/spartahub_6th/tree/main/org.spartahub.gatewayserver)
 
 ## 서비스 인스턴스
-- USER
-- HUB
-- STORE
-- PRODUCT
-- DELIVERY
+- [USER](https://github.com/yonggyo1125/spartahub_6th/tree/main/org.spartahub.user-service)
+- [HUB](https://github.com/yonggyo1125/spartahub_6th/tree/main/org.spartahub.hub-service)
+- [STORE](https://github.com/yonggyo1125/spartahub_6th/tree/main/org.spartahub.store-service)
+- [PRODUCT](https://github.com/yonggyo1125/spartahub_6th/tree/main/org.spartahub.product-service)
+- [DELIVERY](https://github.com/yonggyo1125/spartahub_6th/tree/main/org.spartahub.delivery-service)
 
 
