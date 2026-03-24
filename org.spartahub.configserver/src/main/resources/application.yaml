@@ -29,7 +29,7 @@ eureka:
     register-with-eureka: true
     fetch-registry: true
     service-url:
-      defaultZone: ${EUREKA_URL:http://localhost:13101/eureka/}
+      defaultZone: ${EUREKA_SERVER_URL:http://localhost:13101/eureka/}
 
 management:
   endpoints:
