@@ -1,3 +1,13 @@
 spring:
   config:
     import: optional:file:.env[.properties]
+
+  # 로컬에 설치된 카프카를 사용하는 경우 대체
+  kafka:
+    bootstrap-servers: ${BOOTSTRAP_SERVERS:localhost:9092}
+    properties:
+      security.protocol: "PLAINTEXT"
+    ssl:
+      trust-store-location: ""
+      trust-store-password: ""
+
