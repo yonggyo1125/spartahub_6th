@@ -1,5 +1,11 @@
 # 숙련프로젝트 지도
 
+## 공통 의존성 
+- 모든 서비스 인스턴스 공통 소스 공유
+- 공통으로 포함되는 의존성 공유
+- [repository](https://github.com/yonggyo1125/spartahub-common)
+- [packages](https://github.com/yonggyo1125/spartahub-common/packages/2931842)
+
 ## 기본 인프라 서버
 - [컨피그 서버](https://github.com/yonggyo1125/spartahub_6th/tree/main/org.spartahub.configserver) 
 - [유레카 서버](https://github.com/yonggyo1125/spartahub_6th/tree/main/org.spartahub.eurekaserver)
