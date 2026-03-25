@@ -21,6 +21,15 @@ configurations {
 
 repositories {
 	mavenCentral()
+
+	maven {
+		name = "GitHubPackages"
+		url = uri("https://maven.pkg.github.com/yonggyo1125/spartahub-common")
+		credentials {
+			username = System.getenv("GPR_USER") // 배포할 때 썼던 ID
+			password = System.getenv("GPR_TOKEN") // 배포할 때 썼던 PAT(Classic)
+		}
+	}
 }
 
 ext {
@@ -28,24 +37,7 @@ ext {
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	implementation 'org.springframework.boot:spring-boot-starter-kafka'
-	implementation 'org.springframework.boot:spring-boot-starter-security'
-	implementation 'org.springframework.boot:spring-boot-starter-webmvc'
-	implementation 'org.springframework.cloud:spring-cloud-starter-config'
-	implementation 'org.springframework.cloud:spring-cloud-starter-loadbalancer'
-	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
-	implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
-
-	implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
-	implementation 'org.springframework.boot:spring-boot-starter-aop'
-	implementation 'io.github.resilience4j:resilience4j-spring-boot3' // 통합 스타터
-	implementation 'io.github.resilience4j:resilience4j-circuitbreaker'
-	implementation 'io.github.resilience4j:resilience4j-retry'
-	implementation 'io.github.resilience4j:resilience4j-bulkhead'
-	implementation 'io.github.resilience4j:resilience4j-ratelimiter'
-
-	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.14'
+	implementation 'com.github.yonggyo1125:common:0.0.1'
 
 	// Querydsl APT
 	annotationProcessor 'jakarta.annotation:jakarta.annotation-api'
@@ -53,8 +45,6 @@ dependencies {
 	annotationProcessor 'com.querydsl:querydsl-apt:5.1.0:jakarta'
 
 	// Querydsl JPA
-	implementation 'com.querydsl:querydsl-jpa:5.1.0:jakarta'
-
 	runtimeOnly 'org.postgresql:postgresql'
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
