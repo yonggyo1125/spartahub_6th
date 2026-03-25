@@ -3,6 +3,9 @@
     <include resource="logback-base.xml"/>
 
     <root level="INFO">
-        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="ASYNC_KAFKA" />
     </root>
+
+    <logger name="org.spartahub" level="DEBUG" />
 </configuration>
