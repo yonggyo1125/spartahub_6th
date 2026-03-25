@@ -26,8 +26,8 @@ repositories {
 		name = "GitHubPackages"
 		url = uri("https://maven.pkg.github.com/yonggyo1125/spartahub-common")
 		credentials {
-			username = System.getenv("GPR_USER") // 배포할 때 썼던 ID
-			password = System.getenv("GPR_TOKEN") // 배포할 때 썼던 PAT(Classic)
+			username = System.getenv("GPR_USER")
+			password = System.getenv("GPR_TOKEN")
 		}
 	}
 }
@@ -37,7 +37,7 @@ ext {
 }
 
 dependencies {
-	implementation 'com.github.yonggyo1125:common:0.0.1'
+	implementation 'com.github.yonggyo1125:common:0.0.1-SNAPSHOT'
 
 	// Querydsl APT
 	annotationProcessor 'jakarta.annotation:jakarta.annotation-api'
