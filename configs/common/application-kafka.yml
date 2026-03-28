@@ -17,7 +17,7 @@ spring:
       acks: all
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       # JsonSerializer 사용 시 객체를 JSON 문자열로 자동 변환하여 전송
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      value-serializer: org.springframework.kafka.support.serializer.StringSerializer
       properties:
         enable.idempotence: true # 멱등성 보장 (중복 방지), 기본값 true
         max.block.ms: 10000 # 연결 대기 시간을 10초로 제한
