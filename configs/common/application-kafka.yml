@@ -43,7 +43,7 @@ spring:
         # 최대 폴링 간격: 로직 처리가 너무 길어지면 그룹에서 제외됨 (5분)
         max.poll.interval.ms: 300000
         # 실제 데이터 변환에 사용할 데시리얼라이저 클래스 지정
-        spring.deserializer.value.delegate.class: org.apache.kafka.common.serialization.ByteArrayDeserializer
+        spring.deserializer.value.delegate.class: org.apache.kafka.common.serialization.StringDeserializer
         # 역직렬화를 허용할 패키지 범위 설정 (전체 허용)
         spring.json.trusted.packages: "*"
         # 헤더의 타입 정보 대신 리스너 메서드의 파라미터 타입을 우선 사용하여 패키지 불일치 해결
