@@ -4,11 +4,9 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLRestriction;
 import org.spartahub.common.domain.BaseUserEntity;
-import org.spartahub.common.event.Events;
 import org.spartahub.common.exception.BadRequestException;
 import org.spartahub.common.exception.ForbiddenException;
-import org.spartahub.userservice.domain.event.UserApprovedPayload;
-import org.spartahub.userservice.domain.event.UserDeletePayload;
+import org.spartahub.userservice.domain.event.UserEvents;
 import org.spartahub.userservice.domain.service.DeliveryRotationGenerator;
 import org.spartahub.userservice.domain.service.HubInfo;
 import org.spartahub.userservice.domain.service.RoleCheck;
@@ -113,7 +111,7 @@ public class User extends BaseUserEntity {
 
      // MASTER를 제외한 모든 사용자는 승인을 통해야만 권한이 활성화 됩니다.
      // 허브 배송 담당자를 승인 할 때 다음 배송 순번 결정(수정시에는 변경 불가, 최초 한번 등록)
-     public void approve(String approver, RoleCheck roleCheck, DeliveryRotationGenerator rotationGenerator, String eventType) {
+     public void approve(String approver, RoleCheck roleCheck, DeliveryRotationGenerator rotationGenerator, UserEvents userEvents) {
         if (!StringUtils.hasText(approver)) {
             throw new BadRequestException("승인 관리자 아이디가 누락되었습니다.");
         }
@@ -139,11 +137,11 @@ public class User extends BaseUserEntity {
              this.deliveryRotationOrder = rotationGenerator.next();
          }
         // 승인 완료 시 이메일 또는 메세지 전송
-         Events.trigger(UUID.randomUUID().toString(), "USER", "APPROVE", eventType, UserApprovedPayload.from(this));
+         userEvents.approved(this);
      }
 
      // 직원 퇴사시 soft delete 삭제, MASTER 관리자만 가능
-     public void delete(RoleCheck roleCheck, String masterId, String eventType) {
+     public void delete(RoleCheck roleCheck, String masterId, UserEvents userEvents) {
          // 이미 탈퇴한 경우 처리하지 않음
          if (this.deletedAt != null) {
              return;
@@ -161,7 +159,7 @@ public class User extends BaseUserEntity {
          this.deletedBy = masterId;
 
          // 직원 퇴사 후 후속 처리(예 - 토큰 만료 처리)
-         Events.trigger(UUID.randomUUID().toString(), "USER", "DELETE", eventType, UserDeletePayload.from(this));
+         userEvents.deleted(this);
      }
 
      // 활성화 사용자 여부(재직중 직원 여부)
