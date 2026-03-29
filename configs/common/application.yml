@@ -4,6 +4,10 @@ spring:
       ribbon:
         enabled: false # Netflix Ribbon 대신 Spring Cloud LoadBalancer 사용
 
+    openfeign:
+      circuitbreaker:
+        enabled: true
+
     circuitbreaker:
       resilience4j:
         enabled: true  # Resilience4j 회로 차단기 활성화

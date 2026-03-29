@@ -45,7 +45,15 @@ import static org.spartahub.userservice.domain.UserType.*;
 
 @Getter
 @Entity @ToString
-@Table(name="P_USER")
+@Table(
+        name = "P_USER",
+        indexes = {
+                @Index(
+                        name = "idx_user_type_rotation_order_desc",
+                        columnList = "type, delivery_rotation_order DESC, deleted_at"
+                )
+        }
+)
 @Access(AccessType.FIELD)
 @SQLRestriction("deleted_at IS NULL")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
