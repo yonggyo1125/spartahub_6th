@@ -10,15 +10,15 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import org.spartahub.common.exception.BadRequestException;
 import org.spartahub.userservice.domain.exception.HubNotFoundException;
+import org.spartahub.userservice.domain.service.HubData;
 import org.spartahub.userservice.domain.service.HubInfo;
 
-import java.io.Serializable;
 import java.util.UUID;
 
 @Embeddable
 @Getter @ToString
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class Hub implements Serializable {
+public class Hub {
     @JdbcTypeCode(SqlTypes.UUID)
     @Column(length = 36, name = "hub_id")
     private UUID id; // 허브 ID
@@ -34,13 +34,13 @@ public class Hub implements Serializable {
             throw new BadRequestException("소속 허브 등록/수정을 위한 필수 항목이 누락되었습니다.");
         }
 
-        Hub hub = hubInfo.get(id);
+        HubData hub = hubInfo.get(id);
         if (hub == null) {
             throw new HubNotFoundException(id);
         }
 
         this.id = id;
-        this.name = hub.getName();
-        this.address = hub.getAddress();
+        this.name = hub.name();
+        this.address = hub.address();
     }
 }

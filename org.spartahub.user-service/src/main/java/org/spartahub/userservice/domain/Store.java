@@ -7,6 +7,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import org.spartahub.common.exception.BadRequestException;
 import org.spartahub.userservice.domain.exception.StoreNotFoundException;
+import org.spartahub.userservice.domain.service.StoreData;
 import org.spartahub.userservice.domain.service.StoreInfo;
 
 import java.util.UUID;
@@ -14,7 +15,6 @@ import java.util.UUID;
 @Embeddable
 @Getter @ToString
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-@AllArgsConstructor(access = AccessLevel.PROTECTED)
 public class Store {
     @JdbcTypeCode(SqlTypes.UUID)
     @Column(length = 36, name = "store_id")
@@ -32,14 +32,14 @@ public class Store {
             throw new BadRequestException("소속 업체 등록/수정을 위한 필수 항목이 누락되었습니다.");
         }
 
-        Store store = storeInfo.get(id);
+        StoreData store = storeInfo.get(id);
         if (store == null) {
             throw new StoreNotFoundException(id);
         }
 
 
         this.id = id;
-        name = store.getName();
-        address = store.getAddress();
+        name = store.name();
+        address = store.address();
     }
 }

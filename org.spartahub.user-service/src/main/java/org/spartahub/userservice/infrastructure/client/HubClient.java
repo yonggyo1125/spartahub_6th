@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import java.util.UUID;
 
 @FeignClient(
-        name="hub-service",
+        name = "hub-service",
         fallbackFactory = HubClientFallbackFactory.class
 )
 public interface HubClient {
