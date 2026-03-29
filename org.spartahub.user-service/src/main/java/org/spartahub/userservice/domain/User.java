@@ -7,11 +7,15 @@ import org.spartahub.common.domain.BaseUserEntity;
 import org.spartahub.common.event.Events;
 import org.spartahub.common.exception.BadRequestException;
 import org.spartahub.common.exception.ForbiddenException;
+import org.spartahub.userservice.domain.event.UserApprovedPayload;
+import org.spartahub.userservice.domain.event.UserDeletePayload;
+import org.spartahub.userservice.domain.service.DeliveryRotationGenerator;
 import org.spartahub.userservice.domain.service.HubInfo;
 import org.spartahub.userservice.domain.service.RoleCheck;
 import org.spartahub.userservice.domain.service.StoreInfo;
 import org.springframework.util.StringUtils;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import static org.spartahub.userservice.domain.UserType.*;
@@ -22,7 +26,7 @@ import static org.spartahub.userservice.domain.UserType.*;
  * 2. 허브 배송 담당자는 허브간의 이동을 담당하고 스파르타 물류에 10명 존재(그러나 인원수를 제한 하지는 않을 것)
  * 3. 업체 배송 담당자는 최종 허브에서 수령 업체까지의 이동을 담당, 각 허브당 10명이 존재하나 제한하지는 않음, 특정 허브에 소속되어야 하므로 허브 ID를 가지고 있음
  * 4. 사용자 엔티티는 모든 사용자 정보를 관리하며, 사용자 비활성화 시 deleted_by, deleted_at 필드를 통해 관리됩니다.
- * 5. 마스터 관리자 : 모든 기능에 대한 권한이 있는 관리자 입니다.
+ * 5. 마스터 관리자 : 모든 기능에 대한 권한이 있는 관리자 입니다., 배송 순번 역시 마스터 관리자가 승인시 지정
  * 6. 허브 관리자
  *      - 담당하는 허브를 관리합니다.
  *      - 허브에 속한 배송 담당자를 관리할 수 있습니다.
@@ -30,6 +34,7 @@ import static org.spartahub.userservice.domain.UserType.*;
  *  7. 배송 담당자
  *      - 허브 배송 담당자: 허브 간 배송을 담당합니다. 허브 → 업체 배송은 불가능 합니다.
  *      - 배송 담당자는 배송 순번이 있으며 배송 도메인에서 배송 배정시 이 순번대로 할당 됩니다.
+ *      - 배송 순번은 최종 최초 승인이 될때 결정 된다.
  *
  * 업체 배송 담당자: 허브 → 업체 배송을 담당합니다. 허브 간 배송은 불가능 합니다.
  *      - 허브 배송 담당자: 허브 간 배송을 담당합니다. 허브 → 업체 배송은 불가능 합니다.
@@ -53,12 +58,17 @@ public class User extends BaseUserEntity {
     @Version
     private int version;
 
+    @Column(length=50)
+    private String name; // 사용자명
+
     @Column(length=20, nullable=false)
     @Enumerated(EnumType.STRING)
     private UserType type;
 
     @Embedded
     private Associate associate; // 직원 소속
+
+    private Integer deliveryRotationOrder; // 허브 배송 담당자의 배송 순번
 
     @Embedded
     private Contact contact;
@@ -102,7 +112,8 @@ public class User extends BaseUserEntity {
     }
 
      // MASTER를 제외한 모든 사용자는 승인을 통해야만 권한이 활성화 됩니다.
-     public void approve(String approver, RoleCheck roleCheck) {
+     // 허브 배송 담당자를 승인 할 때 다음 배송 순번 결정(수정시에는 변경 불가, 최초 한번 등록)
+     public void approve(String approver, RoleCheck roleCheck, DeliveryRotationGenerator rotationGenerator, String eventType) {
         if (!StringUtils.hasText(approver)) {
             throw new BadRequestException("승인 관리자 아이디가 누락되었습니다.");
         }
@@ -119,7 +130,42 @@ public class User extends BaseUserEntity {
         this.approved = true;
         this.approvedBy = approver; // 승인한 MASTER 관리자 아이디
 
+         // 허브 배송 담당자의 배송 순번 지정하기
+         if (this.type == HUB_DELIVERY) {
+             if (rotationGenerator == null) {
+                 throw new BadRequestException(type.getDescription() + " 승인 시 순번 생성기는 필수입니다.");
+             }
+
+             this.deliveryRotationOrder = rotationGenerator.next();
+         }
         // 승인 완료 시 이메일 또는 메세지 전송
-         Events.trigger(UUID.randomUUID().toString(), "USER", "APPROVE", "prod-user-approved", this);
+         Events.trigger(UUID.randomUUID().toString(), "USER", "APPROVE", eventType, UserApprovedPayload.from(this));
+     }
+
+     // 직원 퇴사시 soft delete 삭제, MASTER 관리자만 가능
+     public void delete(RoleCheck roleCheck, String masterId, String eventType) {
+         // 이미 탈퇴한 경우 처리하지 않음
+         if (this.deletedAt != null) {
+             return;
+         }
+
+         if (!StringUtils.hasText(masterId)) {
+             throw new BadRequestException("퇴사 처리 관리자 아이디가 누락되었습니다.");
+         }
+
+         if (!roleCheck.hasRole(MASTER)) {
+             throw new ForbiddenException(MASTER.getDescription() + " 권한이 필요합니다.");
+         }
+
+         this.deletedAt = LocalDateTime.now();
+         this.deletedBy = masterId;
+
+         // 직원 퇴사 후 후속 처리(예 - 토큰 만료 처리)
+         Events.trigger(UUID.randomUUID().toString(), "USER", "DELETE", eventType, UserDeletePayload.from(this));
+     }
+
+     // 활성화 사용자 여부(재직중 직원 여부)
+     public boolean isEnabled() {
+        return this.approved && this.deletedAt == null;
      }
 }

@@ -15,3 +15,4 @@ spring:
 topics:
   user:
     approved: dev-user-approved # 회원 승인
+    deleted: dev-user-deleted # 회원 탈퇴
