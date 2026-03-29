@@ -4,10 +4,17 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLRestriction;
 import org.spartahub.common.domain.BaseUserEntity;
+import org.spartahub.common.event.Events;
+import org.spartahub.common.exception.BadRequestException;
+import org.spartahub.common.exception.ForbiddenException;
 import org.spartahub.userservice.domain.service.HubInfo;
+import org.spartahub.userservice.domain.service.RoleCheck;
 import org.spartahub.userservice.domain.service.StoreInfo;
+import org.springframework.util.StringUtils;
 
 import java.util.UUID;
+
+import static org.spartahub.userservice.domain.UserType.*;
 
 
 /**
@@ -22,6 +29,8 @@ import java.util.UUID;
  *      - 허브에 속한 업체를 관리할 수 있습니다.
  *  7. 배송 담당자
  *      - 허브 배송 담당자: 허브 간 배송을 담당합니다. 허브 → 업체 배송은 불가능 합니다.
+ *      - 배송 담당자는 배송 순번이 있으며 배송 도메인에서 배송 배정시 이 순번대로 할당 됩니다.
+ *
  * 업체 배송 담당자: 허브 → 업체 배송을 담당합니다. 허브 간 배송은 불가능 합니다.
  *      - 허브 배송 담당자: 허브 간 배송을 담당합니다. 허브 → 업체 배송은 불가능 합니다.
  * 업체 배송 담당자: 허브 → 업체 배송을 담당합니다. 허브 간 배송은 불가능 합니다.
@@ -51,9 +60,12 @@ public class User extends BaseUserEntity {
     @Embedded
     private Associate associate; // 직원 소속
 
-
     @Embedded
     private Contact contact;
+
+    private boolean approved; // 승인 여부
+
+    private String approvedBy; // 승인 관리자 아이디
 
     @Builder
     public User(UserId id, UserType type, UUID hubId, HubInfo hubInfo, UUID storeId, StoreInfo storeInfo, String email, String slackId) {
@@ -61,10 +73,16 @@ public class User extends BaseUserEntity {
         this.type = type;
 
         // 직원 소속 지정
-        associate = new Associate(type, hubId, hubInfo, storeId, storeInfo);
+        this.associate = new Associate(type, hubId, hubInfo, storeId, storeInfo);
 
         // 연락처 지정
         setContact(email, slackId);
+
+        // MASTER 타입 회원의 경우 approved를 true로 고정
+        if (this.type == MASTER) {
+            this.approved = true;
+            this.approvedBy = "SYSTEM";
+        }
     }
 
     /**
@@ -72,6 +90,36 @@ public class User extends BaseUserEntity {
      * 업체 배송 관리자는 새벽 6시에 그날 배송할 업체 목록의 배송 동선을 LLM + 도구 연동을 통해 생성된 메세지를 슬랙 + 이메일로 전송됩니다.
      */
     private void setContact(String email, String slackId) {
+        // 허브 관리자, 업체 배송 관리자는 알림 메세지가 필수
+        boolean isNotificationRequired = type == HUB_MANAGER || type == STORE_DELIVERY;
 
+        // 이메일, 슬랙 ID 필수 여부 체크
+        if (isNotificationRequired && (!StringUtils.hasText(email) || !StringUtils.hasText(slackId))) {
+            throw new BadRequestException("%s는 알림 수신을 위한 이메일과 슬랙 ID가 필수입니다.".formatted(type.getDescription()));
+        }
+
+        this.contact = new Contact(email, slackId);
     }
+
+     // MASTER를 제외한 모든 사용자는 승인을 통해야만 권한이 활성화 됩니다.
+     public void approve(String approver, RoleCheck roleCheck) {
+        if (!StringUtils.hasText(approver)) {
+            throw new BadRequestException("승인 관리자 아이디가 누락되었습니다.");
+        }
+
+        if (!roleCheck.hasRole(MASTER)) {
+            throw new ForbiddenException(MASTER.getDescription() + " 권한이 필요합니다.");
+        }
+
+        // 이미 승인된 경우는 처리 하지 않음
+        if (this.approved) {
+            return;
+        }
+
+        this.approved = true;
+        this.approvedBy = approver; // 승인한 MASTER 관리자 아이디
+
+        // 승인 완료 시 이메일 또는 메세지 전송
+         Events.trigger(UUID.randomUUID().toString(), "USER", "APPROVE", "prod-user-approved", this);
+     }
 }

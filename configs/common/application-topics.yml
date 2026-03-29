@@ -1,0 +1,3 @@
+topics:
+  user:
+    approved: prod-user-approved # 회원 승인

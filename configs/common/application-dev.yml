@@ -11,3 +11,7 @@ spring:
       trust-store-location: ""
       trust-store-password: ""
 
+
+topics:
+  user:
+    approved: dev-user-approved # 회원 승인
