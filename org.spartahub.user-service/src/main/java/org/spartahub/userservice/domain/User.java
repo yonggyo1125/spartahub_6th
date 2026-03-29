@@ -4,12 +4,10 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLRestriction;
 import org.spartahub.common.domain.BaseUserEntity;
-import org.spartahub.userservice.domain.exception.InvalidAssociateException;
+import org.spartahub.userservice.domain.service.HubInfo;
+import org.spartahub.userservice.domain.service.StoreInfo;
 
-import java.util.List;
 import java.util.UUID;
-
-import static org.spartahub.userservice.domain.UserType.*;
 
 
 /**
@@ -58,58 +56,15 @@ public class User extends BaseUserEntity {
     private Contact contact;
 
     @Builder
-    public User(UserId id, UserType type, UUID hubId, String hubName, String hubAddress, UUID storeId, String storeName, String storeAddress, String email, String slackId) {
+    public User(UserId id, UserType type, UUID hubId, HubInfo hubInfo, UUID storeId, StoreInfo storeInfo, String email, String slackId) {
         this.id = id;
         this.type = type;
 
         // 직원 소속 지정
-        setAssociate(
-                new Associate(
-                    new Hub(hubId, hubName, hubAddress),
-                    new Store(storeId, storeName, storeAddress)
-                ));
+        associate = new Associate(type, hubId, hubInfo, storeId, storeInfo);
 
         // 연락처 지정
         setContact(email, slackId);
-
-    }
-
-    /**
-     * 1. 본사 직원(MASTER, HUB_MANAGER, HUB_DELIVERY)은 특정 거점에 귀속되지 않음.
-     * 2. 업체 배송 담당자(STORE_DELIVERY)는 배차를 받는 최종 도착 허브 정보가 필수임.
-     * 3. 업체 담당자(STORE_MANAGER)는 소속 업체와 그 업체가 소속된 허브 정보가 모두 필수임.
-     */
-    private void setAssociate(Associate associate) {
-        boolean hasHub = associate.hub() != null && associate.hub().id() != null && associate.hub().name() != null &&  associate.hub().address() != null;
-        boolean hasStore = associate.store() != null && associate.store().id() != null;
-
-        // 본사 직원은 소속 정보를 저장하지 않음
-        if (isHeadBranchType(type)) {
-            this.associate = new Associate(null, null);
-            return;
-        }
-
-        if (type == UserType.STORE_DELIVERY) {
-            if (!hasHub) {
-                throw new InvalidAssociateException(type.getDescription() + "는 담당 허브 정보가 필수입니다.");
-            }
-
-            // 업체 정보는 필요 없으므로 제거
-            this.associate = new Associate(associate.hub(), null);
-            return;
-
-        } else if (type == UserType.STORE_MANAGER) {
-            if (!hasHub || !hasStore) {
-                throw new InvalidAssociateException("업체 담당자는 업체 정보와 업체 소속 허브 정보 모두 필수입니다.");
-            }
-        }
-
-        this.associate = associate;
-    }
-
-    // 마스터 관리자, 허브 관리자, 허브 배송 담당자는 모두 본사 직원이며 특정 허브에 소속되어 있지 않음
-    private boolean isHeadBranchType(UserType type) {
-        return List.of(MASTER, HUB_MANAGER, HUB_DELIVERY).contains(type);
     }
 
     /**

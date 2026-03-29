@@ -2,21 +2,44 @@ package org.spartahub.userservice.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
+import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+import org.spartahub.common.exception.BadRequestException;
+import org.spartahub.userservice.domain.exception.StoreNotFoundException;
+import org.spartahub.userservice.domain.service.StoreInfo;
 
-import java.io.Serializable;
 import java.util.UUID;
 
 @Embeddable
-record Store(
-        @JdbcTypeCode(SqlTypes.UUID)
-        @Column(length = 36, name = "store_id")
-        UUID id, // 업체 ID
+@Getter @ToString
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
+public class Store {
+    @JdbcTypeCode(SqlTypes.UUID)
+    @Column(length = 36, name = "store_id")
+    private UUID id;
 
-        @Column(length = 45, name = "store_name")
-        String name, // 업체명
+    @Column(length = 45, name = "store_name")
+    private String name;
 
-        @Column(length = 100, name = "store_address")
-        String address // 업체 주소
-) implements Serializable {}
+    @Column(length = 100, name = "store_address")
+    private String address;
+
+    protected Store(UUID id, StoreInfo storeInfo) {
+
+        if (id == null || storeInfo == null) {
+            throw new BadRequestException("소속 업체 등록/수정을 위한 필수 항목이 누락되었습니다.");
+        }
+
+        Store store = storeInfo.get(id);
+        if (store == null) {
+            throw new StoreNotFoundException(id);
+        }
+
+
+        this.id = id;
+        name = store.getName();
+        address = store.getAddress();
+    }
+}
