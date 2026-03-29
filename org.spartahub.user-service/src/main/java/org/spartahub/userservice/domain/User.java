@@ -84,8 +84,9 @@ public class User extends BaseUserEntity {
     private String approvedBy; // 승인 관리자 아이디
 
     @Builder
-    public User(UserId id, UserType type, UUID hubId, HubInfo hubInfo, UUID storeId, StoreInfo storeInfo, String email, String slackId) {
+    public User(UserId id, String name, UserType type, UUID hubId, HubInfo hubInfo, UUID storeId, StoreInfo storeInfo, String email, String slackId) {
         this.id = id;
+        this.name = name;
         this.type = type;
 
         // 직원 소속 지정
