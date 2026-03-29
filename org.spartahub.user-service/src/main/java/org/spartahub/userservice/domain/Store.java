@@ -23,7 +23,7 @@ public class Store {
     @Column(length = 45, name = "store_name")
     private String name;
 
-    @Column(length = 100, name = "store_address")
+    @Column(name = "store_address")
     private String address;
 
     protected Store(UUID id, StoreInfo storeInfo) {

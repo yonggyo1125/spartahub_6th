@@ -26,7 +26,7 @@ public class Hub {
     @Column(length = 45, name = "hub_name")
     private String name; // 허브명
 
-    @Column(length = 100, name = "hub_address")
+    @Column(name = "hub_address")
     private String address; // 허브 주소
 
     protected Hub(UUID id, HubInfo hubInfo) {

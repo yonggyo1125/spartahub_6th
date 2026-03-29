@@ -7,7 +7,8 @@ import org.spartahub.userservice.domain.exception.InvalidAssociateException;
 import org.spartahub.userservice.domain.service.HubInfo;
 import org.spartahub.userservice.domain.service.StoreInfo;
 
-import java.util.List;
+import java.util.EnumSet;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.spartahub.userservice.domain.UserType.*;
@@ -22,6 +23,9 @@ import static org.spartahub.userservice.domain.UserType.*;
 @ToString
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Associate {
+
+    private static final Set<UserType> HEAD_BRANCH_TYPES = EnumSet.of(MASTER, HUB_MANAGER, HUB_DELIVERY);
+
     @Embedded
     private Hub hub;
 
@@ -55,6 +59,6 @@ public class Associate {
 
     // 마스터 관리자, 허브 관리자, 허브 배송 담당자는 모두 본사 직원이며 특정 허브에 소속되어 있지 않음
     private boolean isHeadBranchType(UserType type) {
-        return List.of(MASTER, HUB_MANAGER, HUB_DELIVERY).contains(type);
+        return HEAD_BRANCH_TYPES.contains(type);
     }
 }
