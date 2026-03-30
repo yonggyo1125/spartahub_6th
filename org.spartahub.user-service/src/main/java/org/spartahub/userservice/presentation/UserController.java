@@ -85,7 +85,7 @@ public class UserController {
 
     @Operation(
             summary = "사용자 비밀번호 변경",
-            description = "MASTER 관리자 또는 본인에 한해 사용자 비밀번호를 변경합니다. 외부 인증 서버(Keycloak)와 동기화됩니다."
+            description = "MASTER 관리자 또는 본인에 한해 사용자 비밀번호를 변경합니다. 외부 인증 서버와 동기화됩니다."
     )
     @PatchMapping("/{userId}/password")
     @ResponseStatus(HttpStatus.NO_CONTENT)
