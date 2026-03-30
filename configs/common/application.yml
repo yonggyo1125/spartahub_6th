@@ -73,7 +73,11 @@ springdoc:
     tags-sorter: alpha
     path: /api-docs.html
     disable-swagger-default-url: true
-    doc-expansion:
+    display-request-duration: true   # 요청 소요 시간 표시
+    doc-expansion: full
+  show-actuator: true
+  model-and-view-allowed: true
+  override-with-generic-response: true
   paths-to-match:
     - /**
 
