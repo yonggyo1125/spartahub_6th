@@ -8,9 +8,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.spartahub.userservice.application.UserAdminService;
 import org.spartahub.userservice.application.UserService;
+import org.spartahub.userservice.application.query.UserQueryService;
 import org.spartahub.userservice.domain.UserType;
 import org.spartahub.userservice.presentation.dto.UserRequest;
 import org.spartahub.userservice.presentation.dto.UserResponse;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springdoc.core.converters.models.PageableAsQueryParam;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,6 +29,7 @@ public class UserController {
 
     private final UserService userService;
     private final UserAdminService userAdminService;
+    private final UserQueryService userQueryService;
 
     @Operation(
             summary = "신규 회원가입",
@@ -95,4 +101,56 @@ public class UserController {
 
         userService.changePassword(userId, request.getPassword());
     }
+
+    // 조회 API S
+    /**
+     * @PageableAsQueryParam: Swagger UI에 page, size, sort 파라미터를 생성함
+     * @Parameter(hidden = true): 기본 Pageable 객체의 복잡한 구조가 노출되는 것을 방지함
+     * @ParameterObject: Search DTO의 필드들을 평평하게(flat) 펼쳐서 쿼리 파라미터로 인식하게 함
+     */
+    @Operation(summary = "사용자 상세 조회", description = "ID를 통해 특정 사용자의 상세 정보를 조회합니다.")
+    @GetMapping("/{userId}")
+    public UserResponse.Info getUser(@PathVariable UUID userId) {
+        return userQueryService.getUser(userId);
+    }
+
+    @Operation(summary = "사용자 목록 검색 (MASTER)", description = "MASTER 관리자용 전체 사용자 통합 검색 기능을 제공합니다.")
+    @GetMapping
+    @PageableAsQueryParam
+    public Page<UserResponse.Info> searchUsers(
+            @ParameterObject UserRequest.Search request,
+            @Parameter(hidden = true) Pageable pageable) {
+        return userQueryService.searchUsers(request.toDomainDto(), pageable);
+    }
+
+    @Operation(summary = "허브별 사용자 조회", description = "특정 허브에 소속된 사용자 목록을 조회합니다.")
+    @GetMapping("/hubs/{hubId}")
+    @PageableAsQueryParam
+    public Page<UserResponse.Info> searchUsersByHub(
+            @PathVariable UUID hubId,
+            @ParameterObject UserRequest.Search request,
+            @Parameter(hidden = true) Pageable pageable) {
+        return userQueryService.searchUsersByHub(hubId, request.toDomainDto(), pageable);
+    }
+
+    @Operation(summary = "업체별 사용자 조회", description = "특정 업체에 소속된 사용자 목록을 조회합니다.")
+    @GetMapping("/stores/{storeId}")
+    @PageableAsQueryParam
+    public Page<UserResponse.Info> searchUsersByStore(
+            @PathVariable UUID storeId,
+            @ParameterObject UserRequest.Search request,
+            @Parameter(hidden = true) Pageable pageable) {
+        return userQueryService.searchUsersByStore(storeId, request.toDomainDto(), pageable);
+    }
+
+    @Operation(summary = "타입별 사용자 조회", description = "사용자 역할(MASTER, HUB_DELIVERY 등)을 기준으로 목록을 조회합니다.")
+    @GetMapping("/types/{type}")
+    @PageableAsQueryParam
+    public Page<UserResponse.Info> searchUsersByType(
+            @PathVariable String type,
+            @ParameterObject UserRequest.Search request,
+            @Parameter(hidden = true) Pageable pageable) {
+        return userQueryService.searchUsersByType(type, request.toDomainDto(), pageable);
+    }
+    // 조회 API E
 }

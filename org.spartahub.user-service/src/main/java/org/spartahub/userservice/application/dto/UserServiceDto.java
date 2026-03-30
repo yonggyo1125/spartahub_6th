@@ -9,7 +9,7 @@ import org.spartahub.userservice.domain.UserType;
 import java.util.UUID;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class UserDto {
+public class UserServiceDto {
 
     @Getter
     @Builder

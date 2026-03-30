@@ -1,7 +1,7 @@
 package org.spartahub.userservice.application;
 
 import lombok.RequiredArgsConstructor;
-import org.spartahub.userservice.application.dto.UserDto;
+import org.spartahub.userservice.application.dto.UserServiceDto;
 import org.spartahub.userservice.domain.User;
 import org.spartahub.userservice.domain.UserId;
 import org.spartahub.userservice.domain.UserRepository;
@@ -31,7 +31,7 @@ public class UserService {
      * 3. DB 저장 실패 시 Keycloak에 생성된 계정 롤백(Withdraw)
      */
     @Transactional
-    public UUID signUp(UserDto.SignUp data) {
+    public UUID signUp(UserServiceDto.SignUp data) {
 
         UUID userId = identityProvider.register(data.getEmail(), data.getPassword());
 

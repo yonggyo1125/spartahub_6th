@@ -7,10 +7,14 @@ import jakarta.validation.constraints.Pattern;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.spartahub.userservice.application.dto.UserDto;
+import org.spartahub.userservice.application.dto.UserServiceDto;
+import org.spartahub.userservice.domain.UserId;
 import org.spartahub.userservice.domain.UserType;
+import org.spartahub.userservice.domain.query.UserQueryDto;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class UserRequest {
@@ -51,8 +55,8 @@ public class UserRequest {
         private String slackId;
 
         // 응용 계층으로 전달하기 위한 변환 메서드
-        public UserDto.SignUp toDto() {
-            return UserDto.SignUp.builder()
+        public UserServiceDto.SignUp toDto() {
+            return UserServiceDto.SignUp.builder()
                     .name(name)
                     .password(password)
                     .type(UserType.valueOf(this.type.toUpperCase()))
@@ -110,5 +114,46 @@ public class UserRequest {
         @Pattern(regexp = "^(?=.*[a-zA-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,20}$",
                 message = "비밀번호는 영문, 숫자, 특수문자를 포함하여 8~20자여야 합니다.")
         private String password;
+    }
+
+    @Data
+    @Schema(description = "사용자 검색")
+    public static class Search {
+        @Schema(description = "사용자 식별자 목록", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+        private List<UUID> ids;
+
+        @Schema(description = "허브 식별자 목록", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+        private List<UUID> hubIds;
+
+        @Schema(description = "업체 식별자 목록", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+        private List<UUID> storeIds;
+
+        @Schema(description = "사용자명", example = "이용교", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+        private String name;
+
+        @Schema(description = "이메일 목록", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+        private List<String> email;
+
+        @Schema(description = "허브명", example = "인천 허브", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+        private String hubName;
+
+        @Schema(description = "업체명", example = "BBQ", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+        private String storeName;
+
+        @Schema(description = "통합 검색 키워드 (이름, 이메일, 허브명, 업체명 포함)", example = "인천", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+        private String keyword;
+
+        public UserQueryDto.Search toDomainDto() {
+            return UserQueryDto.Search.builder()
+                    .ids(ids != null ? ids.stream().map(UserId::of).collect(Collectors.toList()) : null)
+                    .hubIds(hubIds)
+                    .storeIds(storeIds)
+                    .name(name)
+                    .email(email)
+                    .hubName(hubName)
+                    .storeName(storeName)
+                    .keyword(keyword)
+                    .build();
+        }
     }
 }
