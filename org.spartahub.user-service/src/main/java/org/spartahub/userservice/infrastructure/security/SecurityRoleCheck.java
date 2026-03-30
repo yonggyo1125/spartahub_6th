@@ -1,6 +1,7 @@
 package org.spartahub.userservice.infrastructure.security;
 
 import org.spartahub.common.util.SecurityUtil;
+import org.spartahub.userservice.domain.UserId;
 import org.spartahub.userservice.domain.UserType;
 import org.spartahub.userservice.domain.service.RoleCheck;
 import org.springframework.stereotype.Component;
@@ -9,6 +10,7 @@ import org.springframework.util.StringUtils;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Component
@@ -16,7 +18,7 @@ public class SecurityRoleCheck implements RoleCheck {
 
     @Override
     public boolean hasRole(UserType type) {
-        return hasRole(List.of(type));
+        return !hasRole(List.of(type));
     }
 
     @Override
@@ -43,5 +45,11 @@ public class SecurityRoleCheck implements RoleCheck {
                             .anyMatch(userRoleList::contains);
                 })
                 .orElse(false);
+    }
+
+    @Override
+    public boolean isMine(UserId id) {
+        UUID loggedUserId = SecurityUtil.getCurrentUserId().orElse(null);
+        return loggedUserId != null && loggedUserId.equals(id.id());
     }
 }

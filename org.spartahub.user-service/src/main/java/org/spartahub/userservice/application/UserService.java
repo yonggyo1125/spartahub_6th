@@ -1,26 +1,29 @@
 package org.spartahub.userservice.application;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.spartahub.userservice.application.dto.UserDto;
 import org.spartahub.userservice.domain.User;
 import org.spartahub.userservice.domain.UserId;
 import org.spartahub.userservice.domain.UserRepository;
+import org.spartahub.userservice.domain.exception.UserNotFoundException;
 import org.spartahub.userservice.domain.service.HubProvider;
 import org.spartahub.userservice.domain.service.IdentityProvider;
+import org.spartahub.userservice.domain.service.RoleCheck;
 import org.spartahub.userservice.domain.service.StoreProvider;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class UserSignUpService {
+public class UserService {
 
     private final IdentityProvider identityProvider;
     private final UserRepository userRepository;
-    private final HubProvider hubInfo;
+    private final HubProvider hubProvider;
     private final StoreProvider storeProvider;
+    private final RoleCheck roleCheck;
 
     /**
      * 1. 외부 인증시스템에 계정 생성 및 UUID 발급
@@ -39,7 +42,7 @@ public class UserSignUpService {
                     .type(data.getType())
                     .hubId(data.getHubId())
                     .storeId(data.getStoreId())
-                    .hubInfo(hubInfo)
+                    .hubProvider(hubProvider)
                     .storeInfo(storeProvider)
                     .email(data.getEmail())
                     .slackId(data.getSlackId())
@@ -51,5 +54,12 @@ public class UserSignUpService {
 
             throw e;
         }
+    }
+
+    @Transactional
+    public void changePassword(UUID userId, String password) {
+        User user = userRepository.findById(UserId.of(userId)).orElseThrow(UserNotFoundException::new);
+
+        user.changePassword(password, roleCheck, identityProvider);
     }
 }

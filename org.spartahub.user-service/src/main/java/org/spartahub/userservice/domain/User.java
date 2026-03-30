@@ -53,6 +53,9 @@ import static org.spartahub.userservice.domain.UserType.*;
 @SQLRestriction("deleted_at IS NULL")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User extends BaseUserEntity {
+
+    private static final String PASSWORD_REGEX = "^(?=.*[a-zA-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,20}$";
+
     @EmbeddedId
     private UserId id;
 
@@ -79,13 +82,13 @@ public class User extends BaseUserEntity {
     private String approvedBy; // 승인 관리자 아이디
 
     @Builder
-    public User(UserId id, String name, UserType type, UUID hubId, HubProvider hubInfo, UUID storeId, StoreProvider storeInfo, String email, String slackId) {
+    public User(UserId id, String name, UserType type, UUID hubId, HubProvider hubProvider, UUID storeId, StoreProvider storeInfo, String email, String slackId) {
         this.id = id;
         this.name = name;
         this.type = type;
 
         // 직원 소속 지정
-        this.associate = new Associate(type, hubId, hubInfo, storeId, storeInfo);
+        this.associate = new Associate(type, hubId, hubProvider, storeId, storeInfo);
 
         // 연락처 지정
         setContact(email, slackId);
@@ -155,6 +158,26 @@ public class User extends BaseUserEntity {
         setContact(email, slackId);
     }
 
+    /**
+     * 사용자 비밀번호를 변경합니다.
+     * 1. MASTER 관리자 또는 본인(소유자)만 변경 권한을 가집니다.
+     * 2. 실제 비밀번호 변경 처리는 외부 인증 서버를 통해 수행됩니다.
+     */
+    public void changePassword(String password, RoleCheck roleCheck, IdentityProvider identityProvider) {
+        // 권한 체크
+        if (roleCheck.hasRole(MASTER) && !roleCheck.isMine(this.id)) {
+            throw new ForbiddenException("비밀번호를 변경할 권한이 없습니다.");
+        }
+
+        // 비밀번호 유효성 검사
+        if (!StringUtils.hasText(password) || !password.matches(PASSWORD_REGEX)) {
+            throw new BadRequestException("비밀번호는 영문, 숫자, 특수문자를 포함하여 8~20자여야 합니다.");
+        }
+
+        // 외부 인증 서버 변경 요청
+        identityProvider.changePassword(id, password);
+    }
+
      // MASTER를 제외한 모든 사용자는 승인을 통해야만 권한이 활성화 됩니다.
      // 허브 배송 담당자를 승인 할 때 다음 배송 순번 결정(수정시에는 변경 불가, 최초 한번 등록)
      public void approve(String approver, RoleCheck roleCheck, DeliveryRotationGenerator rotationGenerator, UserEvents userEvents) {
@@ -222,7 +245,7 @@ public class User extends BaseUserEntity {
 
      // MASTER 권한 체크
      private void checkMaster(RoleCheck roleCheck) {
-         if (!roleCheck.hasRole(MASTER)) {
+         if (roleCheck.hasRole(MASTER)) {
              throw new ForbiddenException(MASTER.getDescription() + " 권한이 필요합니다.");
          }
      }

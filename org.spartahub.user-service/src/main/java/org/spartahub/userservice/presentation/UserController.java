@@ -7,7 +7,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.spartahub.userservice.application.UserAdminService;
-import org.spartahub.userservice.application.UserSignUpService;
+import org.spartahub.userservice.application.UserService;
 import org.spartahub.userservice.domain.UserType;
 import org.spartahub.userservice.presentation.dto.UserRequest;
 import org.spartahub.userservice.presentation.dto.UserResponse;
@@ -22,7 +22,7 @@ import java.util.UUID;
 @Tag(name = "사용자 API", description = "사용자 계정 생성 및 관리 API")
 public class UserController {
 
-    private final UserSignUpService signUpService;
+    private final UserService userService;
     private final UserAdminService userAdminService;
 
     @Operation(
@@ -32,7 +32,7 @@ public class UserController {
     @PostMapping("/signup")
     @ResponseStatus(HttpStatus.CREATED)
     public UserResponse.SignUp signUp(@RequestBody @Valid UserRequest.SignUp request) {
-        UUID userId = signUpService.signUp(request.toDto());
+        UUID userId = userService.signUp(request.toDto());
 
         return new UserResponse.SignUp(userId);
     }
