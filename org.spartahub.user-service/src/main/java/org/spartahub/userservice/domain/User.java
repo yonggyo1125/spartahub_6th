@@ -98,6 +98,28 @@ public class User extends BaseUserEntity {
         }
     }
 
+    // 사용자 이름 변경(MASTER 관리자만 가능)
+    public void changeName(String name, RoleCheck roleCheck) {
+        checkMaster(roleCheck);
+        this.name = name;
+    }
+
+    // 사용자 소속 변경(MASTER 관리자만 가능)
+    public void changeAssociate(UserType type, UUID hubId, UUID storeId, RoleCheck roleCheck, HubInfo hubInfo, StoreInfo storeInfo, DeliveryRotationGenerator generator) {
+        checkMaster(roleCheck);
+        this.type = type;
+
+        hubId = hubId == null ? this.associate.getHub().getId() : hubId;
+        storeId = storeId == null ? this.associate.getStore().getId() : storeId;
+
+        this.associate = new Associate(type, hubId, hubInfo, storeId, storeInfo);
+
+        // 허브 배송 담당자로 변경되는 경우라면 순번을 다시 할당해야 하고, 그 외에는 null로 변경이 되어야 함
+
+
+
+    }
+
     /**
      * 허브 관리자는 주문이 접수되고 배송에 대한 허브 -> 업체 이동이 결정이 되면 최종 배송지까지의 거리와 운행 스케줄에 따라 최종 배송 시한 메세지를 LLM을 통해 자동 생성하고 슬랙메세지 + 이메일로 전송됩니다.(매일 자정)
      * 업체 배송 관리자는 새벽 6시에 그날 배송할 업체 목록의 배송 동선을 LLM + 도구 연동을 통해 생성된 메세지를 슬랙 + 이메일로 전송됩니다.
@@ -112,6 +134,12 @@ public class User extends BaseUserEntity {
         }
 
         this.contact = new Contact(email, slackId);
+    }
+
+    // 연락처 변경(MASTER 관리자만 가능)
+    public void changeContact(String email, String slackId, RoleCheck roleCheck) {
+        checkMaster(roleCheck);
+        setContact(email, slackId);
     }
 
      // MASTER를 제외한 모든 사용자는 승인을 통해야만 권한이 활성화 됩니다.
