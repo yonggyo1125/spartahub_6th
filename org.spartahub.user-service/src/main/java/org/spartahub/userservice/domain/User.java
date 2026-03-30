@@ -107,17 +107,31 @@ public class User extends BaseUserEntity {
     // 사용자 소속 변경(MASTER 관리자만 가능)
     public void changeAssociate(UserType type, UUID hubId, UUID storeId, RoleCheck roleCheck, HubInfo hubInfo, StoreInfo storeInfo, DeliveryRotationGenerator generator) {
         checkMaster(roleCheck);
-        this.type = type;
+
+        // 타입이 변경된 경우만 수행
+        if (this.type != type) {
+            this.type = type;
+
+            // 허브 배송 담당자로 변경되는 경우라면 순번을 다시 할당해야 하고, 그 외에는 null로 변경이 되어야 함
+            if (this.type == HUB_DELIVERY) {
+                if (this.deliveryRotationOrder == null) {
+                    if (generator == null) {
+                        throw new BadRequestException(type.getDescription() + " 승인 시 순번 생성기는 필수입니다.");
+                    }
+
+                    this.deliveryRotationOrder = generator.next();
+                }
+            } else {
+                this.deliveryRotationOrder = null;
+            }
+        }
 
         hubId = hubId == null ? this.associate.getHub().getId() : hubId;
         storeId = storeId == null ? this.associate.getStore().getId() : storeId;
 
         this.associate = new Associate(type, hubId, hubInfo, storeId, storeInfo);
 
-        // 허브 배송 담당자로 변경되는 경우라면 순번을 다시 할당해야 하고, 그 외에는 null로 변경이 되어야 함
-
-
-
+        setContact(this.contact.getEmail(), this.contact.getSlackId());
     }
 
     /**
