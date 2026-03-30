@@ -8,7 +8,7 @@ import org.keycloak.admin.client.resource.UsersResource;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.spartahub.common.exception.ConflictException;
-import org.spartahub.userservice.application.IdentityProvider;
+import org.spartahub.userservice.domain.service.IdentityProvider;
 import org.spartahub.userservice.domain.exception.IdentityProviderException;
 import org.spartahub.userservice.infrastructure.keycloak.config.KeycloakProperties;
 import org.springframework.http.HttpStatus;

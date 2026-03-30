@@ -7,6 +7,7 @@ import org.spartahub.userservice.domain.User;
 import org.spartahub.userservice.domain.UserId;
 import org.spartahub.userservice.domain.UserRepository;
 import org.spartahub.userservice.domain.service.HubInfo;
+import org.spartahub.userservice.domain.service.IdentityProvider;
 import org.spartahub.userservice.domain.service.StoreInfo;
 import org.springframework.stereotype.Service;
 

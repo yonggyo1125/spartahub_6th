@@ -1,4 +1,4 @@
-package org.spartahub.userservice.application;
+package org.spartahub.userservice.domain.service;
 
 import java.util.UUID;
 

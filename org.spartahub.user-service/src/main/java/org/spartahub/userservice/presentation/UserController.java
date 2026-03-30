@@ -61,9 +61,4 @@ public class UserController {
 
         return new UserResponse.SignUp(userId);
     }
-
-    @GetMapping("/test")
-    public String test() {
-        return "test";
-    }
 }
