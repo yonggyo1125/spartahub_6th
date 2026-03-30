@@ -55,8 +55,6 @@ public class UserController {
     @PostMapping("/signup")
     @ResponseStatus(HttpStatus.CREATED)
     public UserResponse.SignUp signUp(@RequestBody @Valid UserRequest.SignUp request) {
-        log.info("회원가입 요청 수신: email={}", request.getEmail());
-
         UUID userId = signUpService.signUp(request.toDto());
 
         return new UserResponse.SignUp(userId);
