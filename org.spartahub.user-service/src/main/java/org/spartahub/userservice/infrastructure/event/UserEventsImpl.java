@@ -7,7 +7,7 @@ import org.spartahub.userservice.domain.User;
 import org.spartahub.userservice.domain.event.UserApprovedPayload;
 import org.spartahub.userservice.domain.event.UserDeletePayload;
 import org.spartahub.userservice.domain.event.UserEvents;
-import org.spartahub.userservice.infrastructure.kafka.KafkaTopicProperties;
+import org.spartahub.userservice.infrastructure.kafka.UserTopicProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -16,10 +16,10 @@ import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
-@EnableConfigurationProperties(KafkaTopicProperties.class)
+@EnableConfigurationProperties(UserTopicProperties.class)
 public class UserEventsImpl implements UserEvents {
 
-    private final KafkaTopicProperties properties;
+    private final UserTopicProperties properties;
 
     @Override
     public void approved(User user) {

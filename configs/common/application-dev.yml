@@ -16,3 +16,9 @@ topics:
   user:
     approved: dev-user-approved # 회원 승인
     deleted: dev-user-deleted # 회원 탈퇴
+
+  store:
+    updated: dev-store-updated # 업체 정보 수정됨
+
+  hub:
+    updated: dev-hub-updated # 허브 정보 수정됨

@@ -2,3 +2,9 @@ topics:
   user:
     approved: prod-user-approved # 회원 승인
     deleted: prod-user-deleted # 회원 탈퇴
+
+  store:
+    updated: prod-store-updated # 업체 정보 수정됨
+
+  hub:
+    updated: prod-hub-updated # 허브 정보 수정됨
