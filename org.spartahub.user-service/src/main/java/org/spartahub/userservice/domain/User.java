@@ -14,7 +14,6 @@ import java.util.UUID;
 
 import static org.spartahub.userservice.domain.UserType.*;
 
-
 /**
  * 1. 회원 구성은 허브 관리자, 허브 배송 담당자, 업체 배송 담당자, 업체(공급 업체, 생산업체)로 구성 된다. (업체 구분은 업체 도메인에서 정의 한다.)
  * 2. 허브 배송 담당자는 허브간의 이동을 담당하고 스파르타 물류에 10명 존재(그러나 인원수를 제한 하지는 않을 것)
@@ -80,7 +79,7 @@ public class User extends BaseUserEntity {
     private String approvedBy; // 승인 관리자 아이디
 
     @Builder
-    public User(UserId id, String name, UserType type, UUID hubId, HubInfo hubInfo, UUID storeId, StoreInfo storeInfo, String email, String slackId) {
+    public User(UserId id, String name, UserType type, UUID hubId, HubProvider hubInfo, UUID storeId, StoreProvider storeInfo, String email, String slackId) {
         this.id = id;
         this.name = name;
         this.type = type;
@@ -105,7 +104,7 @@ public class User extends BaseUserEntity {
     }
 
     // 사용자 소속 변경(MASTER 관리자만 가능)
-    public void changeAssociate(UserType type, UUID hubId, UUID storeId, RoleCheck roleCheck, HubInfo hubInfo, StoreInfo storeInfo, DeliveryRotationGenerator generator) {
+    public void changeAssociate(UserType type, UUID hubId, UUID storeId, RoleCheck roleCheck, HubProvider hubInfo, StoreProvider storeProvider, DeliveryRotationGenerator generator) {
         checkMaster(roleCheck);
 
         // 타입이 변경된 경우만 수행
@@ -129,7 +128,7 @@ public class User extends BaseUserEntity {
         hubId = hubId == null ? this.associate.getHub().getId() : hubId;
         storeId = storeId == null ? this.associate.getStore().getId() : storeId;
 
-        this.associate = new Associate(type, hubId, hubInfo, storeId, storeInfo);
+        this.associate = new Associate(type, hubId, hubInfo, storeId, storeProvider);
 
         setContact(this.contact.getEmail(), this.contact.getSlackId());
     }

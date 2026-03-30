@@ -6,17 +6,17 @@ import org.spartahub.common.util.SecurityUtil;
 import org.spartahub.userservice.domain.User;
 import org.spartahub.userservice.domain.UserId;
 import org.spartahub.userservice.domain.UserRepository;
+import org.spartahub.userservice.domain.UserType;
 import org.spartahub.userservice.domain.event.UserEvents;
 import org.spartahub.userservice.domain.exception.UserNotFoundException;
-import org.spartahub.userservice.domain.service.DeliveryRotationGenerator;
-import org.spartahub.userservice.domain.service.IdentityProvider;
-import org.spartahub.userservice.domain.service.RoleCheck;
+import org.spartahub.userservice.domain.service.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class UserAdminService {
     private final UserEvents userEvents;
@@ -24,20 +24,38 @@ public class UserAdminService {
     private final UserRepository userRepository;
     private final IdentityProvider identityProvider;
     private final DeliveryRotationGenerator rotationGenerator;
+    private final HubProvider hubInfo;
+    private final StoreProvider storeProvider;
 
-    // 회원 가입 승인
-    @Transactional
+    // 가입 승인
     public void approve(UUID userId) {
         User user = getUser(userId);
 
         user.approve(getMasterId(), roleCheck, rotationGenerator, userEvents);
     }
 
-    // 회원 탈퇴 처리
-    @Transactional
+    // 탈퇴 처리
     public void delete(UUID userId) {
         User user = getUser(userId);
         user.delete(getMasterId(), roleCheck, userEvents, identityProvider);
+    }
+
+    // 소속 변경
+    public void changeAssociate(UUID userId, UserType type, UUID hubId, UUID storeId) {
+        User user = getUser(userId);
+        user.changeAssociate(type, hubId, storeId, roleCheck, hubInfo, storeProvider, rotationGenerator);
+    }
+
+    // 연락처 변경
+    public void changeContact(UUID userId, String email, String slackId) {
+        User user = getUser(userId);
+        user.changeContact(email, slackId, roleCheck);
+    }
+
+    // 이름 변경
+    public void changeName(UUID userId, String name) {
+        User user = getUser(userId);
+        user.changeName(name, roleCheck);
     }
 
     private User getUser(UUID userId) {

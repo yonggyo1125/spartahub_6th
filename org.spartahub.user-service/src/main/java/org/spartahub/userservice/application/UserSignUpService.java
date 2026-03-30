@@ -6,9 +6,9 @@ import org.spartahub.userservice.application.dto.UserDto;
 import org.spartahub.userservice.domain.User;
 import org.spartahub.userservice.domain.UserId;
 import org.spartahub.userservice.domain.UserRepository;
-import org.spartahub.userservice.domain.service.HubInfo;
+import org.spartahub.userservice.domain.service.HubProvider;
 import org.spartahub.userservice.domain.service.IdentityProvider;
-import org.spartahub.userservice.domain.service.StoreInfo;
+import org.spartahub.userservice.domain.service.StoreProvider;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -19,8 +19,8 @@ public class UserSignUpService {
 
     private final IdentityProvider identityProvider;
     private final UserRepository userRepository;
-    private final HubInfo hubInfo;
-    private final StoreInfo storeInfo;
+    private final HubProvider hubInfo;
+    private final StoreProvider storeProvider;
 
     /**
      * 1. 외부 인증시스템에 계정 생성 및 UUID 발급
@@ -40,7 +40,7 @@ public class UserSignUpService {
                     .hubId(data.getHubId())
                     .storeId(data.getStoreId())
                     .hubInfo(hubInfo)
-                    .storeInfo(storeInfo)
+                    .storeInfo(storeProvider)
                     .email(data.getEmail())
                     .slackId(data.getSlackId())
                     .build();

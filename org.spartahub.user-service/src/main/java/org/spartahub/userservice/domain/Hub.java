@@ -11,7 +11,7 @@ import org.hibernate.type.SqlTypes;
 import org.spartahub.common.exception.BadRequestException;
 import org.spartahub.userservice.domain.exception.HubNotFoundException;
 import org.spartahub.userservice.domain.service.HubData;
-import org.spartahub.userservice.domain.service.HubInfo;
+import org.spartahub.userservice.domain.service.HubProvider;
 
 import java.util.UUID;
 
@@ -29,7 +29,7 @@ public class Hub {
     @Column(name = "hub_address")
     private String address; // 허브 주소
 
-    protected Hub(UUID id, HubInfo hubInfo) {
+    protected Hub(UUID id, HubProvider hubInfo) {
         if (id == null || hubInfo == null) {
             throw new BadRequestException("소속 허브 등록/수정을 위한 필수 항목이 누락되었습니다.");
         }

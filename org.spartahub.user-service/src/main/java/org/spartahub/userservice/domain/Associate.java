@@ -4,8 +4,8 @@ import jakarta.persistence.Embeddable;
 import jakarta.persistence.Embedded;
 import lombok.*;
 import org.spartahub.userservice.domain.exception.InvalidAssociateException;
-import org.spartahub.userservice.domain.service.HubInfo;
-import org.spartahub.userservice.domain.service.StoreInfo;
+import org.spartahub.userservice.domain.service.HubProvider;
+import org.spartahub.userservice.domain.service.StoreProvider;
 
 import java.util.EnumSet;
 import java.util.Set;
@@ -33,7 +33,7 @@ public class Associate {
     private Store store;
 
     @Builder
-    protected Associate(UserType type, UUID hubId, HubInfo hubInfo, UUID storeId, StoreInfo storeInfo) {
+    protected Associate(UserType type, UUID hubId, HubProvider hubInfo, UUID storeId, StoreProvider storeProvider) {
         // 본사 직원은 조기에 종료 (필드는 null 유지)
         if (isHeadBranchType(type)) {
             return;
@@ -53,7 +53,7 @@ public class Associate {
             if (storeId == null) {
                 throw new InvalidAssociateException(type.getDescription() + "는 업체 ID가 필수입니다.");
             }
-            this.store = new Store(storeId, storeInfo);
+            this.store = new Store(storeId, storeProvider);
         }
     }
 

@@ -8,7 +8,7 @@ import org.hibernate.type.SqlTypes;
 import org.spartahub.common.exception.BadRequestException;
 import org.spartahub.userservice.domain.exception.StoreNotFoundException;
 import org.spartahub.userservice.domain.service.StoreData;
-import org.spartahub.userservice.domain.service.StoreInfo;
+import org.spartahub.userservice.domain.service.StoreProvider;
 
 import java.util.UUID;
 
@@ -26,13 +26,13 @@ public class Store {
     @Column(name = "store_address")
     private String address;
 
-    protected Store(UUID id, StoreInfo storeInfo) {
+    protected Store(UUID id, StoreProvider storeProvider) {
 
-        if (id == null || storeInfo == null) {
+        if (id == null || storeProvider == null) {
             throw new BadRequestException("소속 업체 등록/수정을 위한 필수 항목이 누락되었습니다.");
         }
 
-        StoreData store = storeInfo.get(id);
+        StoreData store = storeProvider.get(id);
         if (store == null) {
             throw new StoreNotFoundException(id);
         }
