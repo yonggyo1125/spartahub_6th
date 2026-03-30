@@ -63,4 +63,42 @@ public class UserRequest {
                     .build();
         }
     }
+
+    @Data
+    @Schema(description = "사용자 이름 변경 요청")
+    public static class ChangeName {
+        @NotBlank(message = "변경할 이름은 필수입니다.")
+        @Schema(description = "변경할 이름", example = "홍길동", requiredMode = Schema.RequiredMode.REQUIRED)
+        private String name;
+    }
+
+    @Data
+    @Schema(description = "사용자 연락처 변경 요청")
+    public static class ChangeContact {
+        @Email(message = "유효한 이메일 형식이 아닙니다.")
+        @NotBlank(message = "이메일은 필수입니다.")
+        @Schema(description = "변경할 이메일", example = "new@spartahub.com", requiredMode = Schema.RequiredMode.REQUIRED)
+        private String email;
+
+        @NotBlank(message = "슬랙 ID는 필수입니다.")
+        @Schema(description = "변경할 슬랙 ID", example = "U98765432", requiredMode = Schema.RequiredMode.REQUIRED)
+        private String slackId;
+    }
+
+    @Data
+    @Schema(description = "사용자 타입 및 소속 변경 요청")
+    public static class ChangeAssociate {
+        @NotBlank(message = "사용자 타입은 필수입니다.")
+        @Schema(description = "변경할 사용자 역할 (MASTER, HUB_MANAGER 등)",
+                example = "HUB_DELIVERY", requiredMode = Schema.RequiredMode.REQUIRED)
+        private String type; // 도메인 Enum 대신 String으로 받음
+
+        @Schema(description = "변경할 소속 허브 ID", example = "550e8400-e29b-41d4-a716-446655440000",
+                requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+        private UUID hubId;
+
+        @Schema(description = "변경할 소속 업체 ID", example = "660f8400-f29b-51d4-b716-556655440111",
+                requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+        private UUID storeId;
+    }
 }
