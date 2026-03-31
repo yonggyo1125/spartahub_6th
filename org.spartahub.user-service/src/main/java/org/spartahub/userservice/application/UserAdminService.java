@@ -1,20 +1,21 @@
 package org.spartahub.userservice.application;
 
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.spartahub.common.exception.UnAuthorizedException;
 import org.spartahub.common.util.SecurityUtil;
-import org.spartahub.userservice.domain.User;
-import org.spartahub.userservice.domain.UserId;
-import org.spartahub.userservice.domain.UserRepository;
-import org.spartahub.userservice.domain.UserType;
+import org.spartahub.userservice.domain.*;
 import org.spartahub.userservice.domain.event.UserEvents;
 import org.spartahub.userservice.domain.exception.UserNotFoundException;
 import org.spartahub.userservice.domain.service.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -22,10 +23,12 @@ public class UserAdminService {
     private final UserEvents userEvents;
     private final RoleCheck roleCheck;
     private final UserRepository userRepository;
+    private final UserBulkRepository userBulkRepository;
     private final IdentityProvider identityProvider;
     private final DeliveryRotationGenerator rotationGenerator;
     private final HubProvider hubInfo;
     private final StoreProvider storeProvider;
+    private final EntityManager em;
 
     // 가입 승인
     public void approve(UUID userId) {
@@ -58,6 +61,24 @@ public class UserAdminService {
         user.changeName(name, roleCheck);
     }
 
+    // 허브 정보 일괄 변경
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void syncHubInfo(Hub hub) {
+        long updatedCount = userBulkRepository.bulkUpdateHubInfo(hub);
+        em.clear();
+
+        log.info("[BulkUpdate] Hub ID: {} - {} users updated", hub.getId(), updatedCount);
+    }
+
+    // 업체 정보 일괄 변경
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void syncStoreInfo(Store store) {
+        long updatedCount = userBulkRepository.bulkUpdateStoreInfo(store);
+        em.clear();
+
+        log.info("[BulkUpdate] Store ID: {} - {} users updated", store.getId(), updatedCount);
+    }
+
     private User getUser(UUID userId) {
         return userRepository.findById(UserId.of(userId)).orElseThrow(UserNotFoundException::new);
     }
@@ -66,4 +87,5 @@ public class UserAdminService {
         return SecurityUtil.getCurrentUsername()
                 .orElseThrow(() -> new UnAuthorizedException("관리자 인증 정보가 유효하지 않습니다."));
     }
+
 }
