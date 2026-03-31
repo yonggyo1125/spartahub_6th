@@ -15,6 +15,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 
 @Slf4j
@@ -56,7 +58,6 @@ public class UserContextFilter implements GlobalFilter, Ordered {
                 .flatMap(auth -> {
                     // JWT에서 UUID 추출(Subject)
                     String userId = auth.getToken().getSubject();
-                    log.info("User id: {}", userId);
                     return webClient
                             .get()
                             .uri("/me")
@@ -79,7 +80,8 @@ public class UserContextFilter implements GlobalFilter, Ordered {
                                 // 조회된 정보를 요청 헤더에 실어서 전송
                                 ServerHttpRequest request = mutatedExchange.getRequest().mutate()
                                         .header(HEADER_USER_ID, user.id().toString())
-                                        .header(HEADER_USER_NAME, user.name())
+                                        .header(HEADER_USER_NAME, StringUtils.hasText(user.name()) ?
+                                                URLEncoder.encode(user.name(), StandardCharsets.UTF_8) : "")
                                         .header(HEADER_EMAIL, user.email())
                                         .header(HEADER_ROLES, StringUtils.hasText(user.type()) ? "ROLE_" + user.type() : "")
                                         .header(HEADER_SLACK_ID, user.slackId())
