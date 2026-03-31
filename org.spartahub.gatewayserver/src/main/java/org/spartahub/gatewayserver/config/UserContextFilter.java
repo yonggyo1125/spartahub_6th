@@ -1,6 +1,5 @@
 package org.spartahub.gatewayserver.config;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.spartahub.gatewayserver.response.User;
 import org.spartahub.gatewayserver.response.UserResponse;
@@ -11,16 +10,19 @@ import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
+import java.time.Duration;
+
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class UserContextFilter implements GlobalFilter, Ordered {
 
-    private final WebClient.Builder webClient;
+    private final WebClient webClient;
+    private static final String HEADER_USER_UUID = "X-User-UUID";
     private static final String HEADER_USER_ID = "X-User-Id";
     private static final String HEADER_ROLES = "X-User-Roles";
     private static final String HEADER_EMAIL = "X-User-Email";
@@ -28,42 +30,68 @@ public class UserContextFilter implements GlobalFilter, Ordered {
     private static final String HEADER_USER_NAME = "X-User-Name";
     private static final String HEADER_ENABLED = "X-User-Enabled";
 
+    public UserContextFilter(WebClient.Builder webClientBuilder) {
+        // 생성자에서 미리 빌드 (LoadBalancer 가 설정된 빌더여야 함)
+        this.webClient = webClientBuilder.baseUrl("http://user-service").build();
+    }
+
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        // SecurityContext에서 JWT의 Subject(UUID) 추출
+        // 필터 진입 시점에 외부에서 유입된 위조 가능성 있는 헤더를 먼저 제거
+        ServerHttpRequest cleanedRequest = exchange.getRequest().mutate()
+                .headers(httpHeaders -> {
+                    httpHeaders.remove("X-User-UUID");
+                    httpHeaders.remove(HEADER_USER_ID);
+                    httpHeaders.remove(HEADER_USER_NAME);
+                    httpHeaders.remove(HEADER_EMAIL);
+                    httpHeaders.remove(HEADER_ROLES);
+                    httpHeaders.remove(HEADER_SLACK_ID);
+                    httpHeaders.remove(HEADER_ENABLED);
+                })
+                .build();
+        ServerWebExchange mutatedExchange = exchange.mutate().request(cleanedRequest).build();
+
         return exchange.getPrincipal()
                 .cast(JwtAuthenticationToken.class)
                 .flatMap(auth -> {
                     // JWT에서 UUID 추출(Subject)
                     String userId = auth.getToken().getSubject();
 
-                    return webClient.build()
+                    return webClient
                             .get()
-                            .uri("http://user-service/me")
-                            .header("X-User-UUID", userId)
+                            .uri("/me")
+                            .header(HEADER_USER_UUID, userId)
                             .retrieve()
                             .bodyToMono(UserResponse.class)
+                            .timeout(Duration.ofMillis(500)) // 500ms 타임아웃 설정(장애 전파 방지)
+                            .onErrorResume(e -> {
+                                log.error("User Service 연동 실패 (ID: {}): {}", userId, e.getMessage());
+                                return Mono.empty();
+                            })
                             .flatMap(res -> {
-                                if (!res.success() || res.data() == null) {
-                                    return chain.filter(exchange);
+                                if (res == null || !res.success() || res.data() == null) {
+                                    log.warn("User 정보 누락 ID: {}", userId);
+                                    return chain.filter(mutatedExchange);
                                 }
 
                                 User user = res.data();
+
                                 // 조회된 정보를 요청 헤더에 실어서 전송
-                                ServerHttpRequest request = exchange.getRequest().mutate()
+                                ServerHttpRequest request = mutatedExchange.getRequest().mutate()
                                         .header(HEADER_USER_ID, user.id().toString())
                                         .header(HEADER_USER_NAME, user.name())
                                         .header(HEADER_EMAIL, user.email())
-                                        .header(HEADER_ROLES, user.type())
+                                        .header(HEADER_ROLES, StringUtils.hasText(user.type()) ? "ROLE_" + user.type() : "")
                                         .header(HEADER_SLACK_ID, user.slackId())
+                                        .header(HEADER_ENABLED, String.valueOf(user.enabled()))
                                         .build();
 
-                                return chain.filter(exchange.mutate().request(request).build());
+                                return chain.filter(mutatedExchange.mutate().request(request).build());
 
                             });
 
                 })
-                .switchIfEmpty(chain.filter(exchange)); // 토큰이 없는 경우(익명 사용자)는 통과 또는 에러 처리
+                .switchIfEmpty(chain.filter(mutatedExchange)); // 토큰이 없는 경우(익명 사용자)는 통과 또는 에러 처리
     }
 
     @Override

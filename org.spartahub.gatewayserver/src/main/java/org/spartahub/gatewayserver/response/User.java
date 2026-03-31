@@ -7,5 +7,6 @@ public record User(
         String name,
         String type,
         String email,
-        String slackId
+        String slackId,
+        boolean enabled
 ) {}
