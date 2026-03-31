@@ -76,3 +76,6 @@ springdoc:
     urls:
       - url: /user-service/v3/api-docs
         name: USER API
+
+      - url: /hub-service/v3/api-docs
+        name: HUB API
