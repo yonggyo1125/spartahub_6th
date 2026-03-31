@@ -7,6 +7,20 @@ spring:
           issuer-uri: "https://keycloak.code-factory.co.kr/realms/spartahub"
   cloud:
     gateway:
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOriginPatterns: "*"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+              - PATCH
+            allowedHeaders: "*"
+            allowCredentials: true
+            maxAge: 3600
       discovery:
         locator:
           enabled: true
@@ -18,35 +32,35 @@ spring:
           predicates:
             - Path=/v1/hubs/**
           filters:
-            - 'RewritePath=/v1/hub/(?<path>.*), /\${path}'
+            - "RewritePath=/v1/hubs(?:/(?<path>.*))?, /\\${path}"
 
         - id: user-service
           uri: lb://user-service
           predicates:
             - Path=/v1/users/**
           filters:
-            - 'RewritePath=/v1/user/(?<path>.*), /\${path}'
+            - "RewritePath=/v1/users(?:/(?<path>.*))?, /\\${path}"
 
         - id: store-service
           uri: lb://store-service
           predicates:
             - Path=/v1/stores/**
           filters:
-            - 'RewritePath=/v1/store/(?<path>.*), /\${path}'
+            - "RewritePath=/v1/stores(?:/(?<path>.*))?, /\\${path}"
 
         - id: product-service
           uri: lb://product-service
           predicates:
             - Path=/v1/products/**
           filters:
-            - 'RewritePath=/v1/product/(?<path>.*), /\${path}'
+            - "RewritePath=/v1/products(?:/(?<path>.*))?, /\\${path}"
 
         - id: delivery-service
           uri: lb://delivery-service
           predicates:
             - Path=/v1/deliveries/**
           filters:
-            - 'RewritePath=/v1/delivery/(?<path>.*), /\${path}'
+            - "RewritePath=/v1/deliveries(?:/(?<path>.*))?, /\\${path}"
 
 springdoc:
   enable-native-support: true

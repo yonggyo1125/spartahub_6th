@@ -9,15 +9,14 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.spartahub.config.security.UserDetailsImpl;
 import org.spartahub.userservice.application.AuthService;
 import org.spartahub.userservice.presentation.dto.RefreshTokenRequest;
 import org.spartahub.userservice.presentation.dto.TokenRequest;
 import org.spartahub.userservice.presentation.dto.TokenResponse;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
@@ -69,5 +68,10 @@ public class AuthController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void logout(@RequestBody @Valid RefreshTokenRequest request) {
         authService.logout(request.refreshToken());
+    }
+
+    @GetMapping("/test")
+    public void test(@AuthenticationPrincipal UserDetailsImpl users) {
+        log.info("Users: {}", users);
     }
 }
