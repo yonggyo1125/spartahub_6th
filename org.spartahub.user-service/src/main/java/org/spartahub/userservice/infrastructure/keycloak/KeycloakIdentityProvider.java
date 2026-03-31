@@ -43,7 +43,6 @@ public class KeycloakIdentityProvider implements IdentityProvider {
         user.setCredentials(Collections.singletonList(credential));
 
         // Keycloak에 사용자 생성 요청
-        log.info("체크: {}", properties);
         UsersResource usersResource = keycloak.realm(properties.realm()).users();
         try (Response response = usersResource.create(user)) {
             if (response.getStatus() == HttpStatus.CONFLICT.value()) {
