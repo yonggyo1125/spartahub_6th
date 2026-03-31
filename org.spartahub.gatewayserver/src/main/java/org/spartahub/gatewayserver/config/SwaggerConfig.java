@@ -15,4 +15,12 @@ public class SwaggerConfig {
                 .build();
     }
 
+    @Bean
+    public GroupedOpenApi hubAPI() {
+        return GroupedOpenApi.builder()
+                .group("hub-api")
+                .displayName("HUB API")
+                .pathsToMatch("/v1/hubs/**")
+                .build();
+    }
 }

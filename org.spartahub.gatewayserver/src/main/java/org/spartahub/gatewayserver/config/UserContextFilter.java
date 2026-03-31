@@ -18,12 +18,14 @@ import reactor.core.publisher.Mono;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.UUID;
 
 @Slf4j
 @Component
 public class UserContextFilter implements GlobalFilter, Ordered {
 
     private final WebClient webClient;
+    private static final String HEADER_TRACE_ID = "X-Trace-Id";
     private static final String HEADER_USER_UUID = "X-User-UUID";
     private static final String HEADER_USER_ID = "X-User-Id";
     private static final String HEADER_ROLES = "X-User-Roles";
@@ -39,9 +41,17 @@ public class UserContextFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+        // 진입 시점에 Trace-Id 생성
+        String traceId = UUID.randomUUID().toString().substring(0, 8);
+        String path = exchange.getRequest().getPath().value();
+        String method = exchange.getRequest().getMethod().name();
+
+        log.info("[Trace-ID: {}] Incoming Request: {} {}", traceId, method, path);
+
         // 필터 진입 시점에 외부에서 유입된 위조 가능성 있는 헤더를 먼저 제거
         ServerHttpRequest cleanedRequest = exchange.getRequest().mutate()
                 .headers(httpHeaders -> {
+                    httpHeaders.remove(HEADER_TRACE_ID);
                     httpHeaders.remove(HEADER_USER_UUID);
                     httpHeaders.remove(HEADER_USER_ID);
                     httpHeaders.remove(HEADER_USER_NAME);
@@ -50,6 +60,7 @@ public class UserContextFilter implements GlobalFilter, Ordered {
                     httpHeaders.remove(HEADER_SLACK_ID);
                     httpHeaders.remove(HEADER_ENABLED);
                 })
+                .header(HEADER_TRACE_ID, traceId)
                 .build();
         ServerWebExchange mutatedExchange = exchange.mutate().request(cleanedRequest).build();
 
