@@ -40,7 +40,7 @@ public class UserResponse {
         private String storeName;
         @Schema(description = "배송 순번")
         private Integer deliveryRotationOrder;
-
+        private boolean enabled;
         public static Info from(User user) {
             return Info.builder()
                     .id(user.getId().id())
@@ -53,6 +53,7 @@ public class UserResponse {
                     .storeId(user.getAssociate().getStore().getId())
                     .storeName(user.getAssociate().getStore().getName())
                     .deliveryRotationOrder(user.getDeliveryRotationOrder())
+                    .enabled(user.isEnabled())
                     .build();
         }
     }
