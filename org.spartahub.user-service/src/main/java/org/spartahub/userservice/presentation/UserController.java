@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.spartahub.common.exception.UnAuthorizedException;
 import org.spartahub.common.util.SecurityUtil;
 import org.spartahub.userservice.application.UserAdminService;
 import org.spartahub.userservice.application.UserService;
@@ -155,7 +156,6 @@ public class UserController {
         return userQueryService.searchUsersByStore(storeId, request.toDomainDto(), pageable);
     }
 
-    @PreAuthorize("hasAnyRole('MASTER', 'HUB_MANAGER')")
     @Operation(summary = "타입별 사용자 조회", description = "사용자 역할(MASTER, HUB_DELIVERY 등)을 기준으로 목록을 조회합니다.")
     @GetMapping("/types/{type}")
     @PageableAsQueryParam
@@ -169,8 +169,17 @@ public class UserController {
     @PreAuthorize("hasAnyRole('MASTER', 'HUB_MANAGER', 'HUB_DELIVERY', 'STORE_DELIVERY', 'STORE_MANAGER')")
     @Operation(summary = "내 정보 조회", description = "현재 로그인한 사용자의 상세 정보를 반환합니다.")
     @GetMapping("/me")
-    public UserResponse.Info getMyInfo() {
-        return userQueryService.getUser(getUserId());
+    public UserResponse.Info getMyInfo(
+            @RequestHeader(name = "X-User-UUID", required = false) UUID gatewayUserId) {
+
+        // 게이트웨이 헤더 우선, 없으면 시큐리티 컨텍스트에서 추출
+        UUID targetId = (gatewayUserId != null) ? gatewayUserId : getUserId();
+
+        if (targetId == null) {
+            throw new UnAuthorizedException("사용자 식별 정보가 없습니다.");
+        }
+
+        return userQueryService.getUser(targetId);
     }
     // 조회 API E
 
