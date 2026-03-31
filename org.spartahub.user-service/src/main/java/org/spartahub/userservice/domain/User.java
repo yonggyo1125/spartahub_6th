@@ -54,7 +54,7 @@ import static org.spartahub.userservice.domain.UserType.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User extends BaseUserEntity {
 
-    private static final String PASSWORD_REGEX = "^(?=.*[a-zA-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,20}$";
+    private static final String PASSWORD_REGEX = "^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^a-zA-Z0-9ㄱ-ㅎㅏ-ㅣ가-힣\\s])[a-zA-Z0-9ㄱ-ㅎㅏ-ㅣ가-힣\\s\\S]{8,20}$";
 
     @EmbeddedId
     private UserId id;

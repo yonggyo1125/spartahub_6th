@@ -18,10 +18,9 @@ public class KeycloakConfig{
     public Keycloak keycloak() {
         return KeycloakBuilder.builder()
                 .serverUrl(properties.serverUrl())
-                .realm(properties.realm())
+                .realm("master")
                 .grantType(OAuth2Constants.PASSWORD)
-                .clientId(properties.clientId())
-                .clientSecret(properties.clientSecret())
+                .clientId("admin-cli")
                 .username(properties.adminUsername())
                 .password(properties.adminPassword())
                 .build();

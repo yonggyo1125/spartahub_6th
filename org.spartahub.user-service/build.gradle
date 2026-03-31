@@ -89,3 +89,4 @@ tasks.withType(JavaCompile).configureEach {
 clean {
 	delete querydslDir
 }
+
