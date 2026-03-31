@@ -23,7 +23,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: "https://keycloak.code-factory.co.kr/realms/codefactory"
+          issuer-uri: "https://keycloak.code-factory.co.kr/realms/spartahub"
 
 # 키클록 설정
 keycloak:
