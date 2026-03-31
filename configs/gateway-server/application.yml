@@ -16,35 +16,35 @@ spring:
         - id: hub-service
           uri: lb://hub-service
           predicates:
-            - Path=/v1/hub/**
+            - Path=/v1/hubs/**
           filters:
             - 'RewritePath=/v1/hub/(?<path>.*), /\${path}'
 
         - id: user-service
           uri: lb://user-service
           predicates:
-            - Path=/v1/user/**
+            - Path=/v1/users/**
           filters:
             - 'RewritePath=/v1/user/(?<path>.*), /\${path}'
 
         - id: store-service
           uri: lb://store-service
           predicates:
-            - Path=/v1/store/**
+            - Path=/v1/stores/**
           filters:
             - 'RewritePath=/v1/store/(?<path>.*), /\${path}'
 
         - id: product-service
           uri: lb://product-service
           predicates:
-            - Path=/v1/product/**
+            - Path=/v1/products/**
           filters:
             - 'RewritePath=/v1/product/(?<path>.*), /\${path}'
 
         - id: delivery-service
           uri: lb://delivery-service
           predicates:
-            - Path=/v1/delivery/**
+            - Path=/v1/deliveries/**
           filters:
             - 'RewritePath=/v1/delivery/(?<path>.*), /\${path}'
 
@@ -62,11 +62,3 @@ springdoc:
     urls:
       - url: /user-service/v3/api-docs
         name: USER API
-      - url: /hub-service/v3/api-docs
-        name: HUB API
-      - url: /store-service/v3/api-docs
-        name: STORE API
-      - url: /product-service/v3/api-docs
-        name: PRODUCT API
-      - url: /delivery-service/v3/api-docs
-        name: DELIVERY API
