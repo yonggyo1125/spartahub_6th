@@ -20,6 +20,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -119,7 +120,7 @@ public class UserController {
      */
     @PreAuthorize("hasAnyRole('MASTER', 'HUB_MANAGER')")
     @Operation(summary = "사용자 상세 조회", description = "ID를 통해 특정 사용자의 상세 정보를 조회합니다.")
-    @GetMapping("/{userId}")
+    @GetMapping("/{userId}/details")
     public UserResponse.Info getUser(@PathVariable UUID userId) {
         return userQueryService.getUser(userId);
     }
@@ -166,15 +167,28 @@ public class UserController {
         return userQueryService.searchUsersByType(type, request.toDomainDto(), pageable);
     }
 
-    @PreAuthorize("hasAnyRole('MASTER', 'HUB_MANAGER', 'HUB_DELIVERY', 'STORE_DELIVERY', 'STORE_MANAGER')")
     @Operation(summary = "내 정보 조회", description = "현재 로그인한 사용자의 상세 정보를 반환합니다.")
     @GetMapping("/me")
     public UserResponse.Info getMyInfo(
-            @RequestHeader(name = "X-User-UUID", required = false) UUID gatewayUserId) {
+            @RequestHeader(name = "X-User-UUID", required = false) String gatewayUserId) {
 
-        // 게이트웨이 헤더 우선, 없으면 시큐리티 컨텍스트에서 추출
-        UUID targetId = (gatewayUserId != null) ? gatewayUserId : getUserId();
+        UUID targetId = null;
+        log.info("gatewayUserId: {}", gatewayUserId);
+        // 게이트웨이 헤더(UUID) 파싱 시도
+        if (StringUtils.hasText(gatewayUserId)) {
+            try {
+                targetId = UUID.fromString(gatewayUserId.trim());
+            } catch (IllegalArgumentException e) {
+                log.warn("게이트웨이에서 잘못된 UUID 형식이 전송됨: {}", gatewayUserId);
+            }
+        }
 
+        // 헤더에 없으면 SecurityContext에서 추출
+        if (targetId == null) {
+            targetId = getUserId();
+        }
+
+        // 최종 식별자가 없으면 401 에러
         if (targetId == null) {
             throw new UnAuthorizedException("사용자 식별 정보가 없습니다.");
         }

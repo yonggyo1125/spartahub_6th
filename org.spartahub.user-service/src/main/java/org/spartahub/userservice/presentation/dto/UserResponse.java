@@ -42,16 +42,22 @@ public class UserResponse {
         private Integer deliveryRotationOrder;
         private boolean enabled;
         public static Info from(User user) {
+            // 1. Contact 정보 방어 (email, slackId)
+            var contact = user.getContact();
+            // 2. Associate 정보 방어 (hub, store)
+            var associate = user.getAssociate();
+
             return Info.builder()
-                    .id(user.getId().id())
+                    .id(user.getId() != null ? user.getId().id() : null)
                     .name(user.getName())
                     .type(user.getType())
-                    .email(user.getContact().getEmail())
-                    .slackId(user.getContact().getSlackId())
-                    .hubId(user.getAssociate().getHub().getId())
-                    .hubName(user.getAssociate().getHub().getName())
-                    .storeId(user.getAssociate().getStore().getId())
-                    .storeName(user.getAssociate().getStore().getName())
+                    .email(contact != null ? contact.getEmail() : null)
+                    .slackId(contact != null ? contact.getSlackId() : null)
+                    .hubId(associate != null && associate.getHub() != null ? associate.getHub().getId() : null)
+                    .hubName(associate != null && associate.getHub() != null ? associate.getHub().getName() : null)
+                    .storeId(associate != null && associate.getStore() != null ? associate.getStore().getId() : null)
+                    .storeName(associate != null && associate.getStore() != null ? associate.getStore().getName() : null)
+
                     .deliveryRotationOrder(user.getDeliveryRotationOrder())
                     .enabled(user.isEnabled())
                     .build();

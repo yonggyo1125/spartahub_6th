@@ -40,7 +40,7 @@ public class UserContextFilter implements GlobalFilter, Ordered {
         // 필터 진입 시점에 외부에서 유입된 위조 가능성 있는 헤더를 먼저 제거
         ServerHttpRequest cleanedRequest = exchange.getRequest().mutate()
                 .headers(httpHeaders -> {
-                    httpHeaders.remove("X-User-UUID");
+                    httpHeaders.remove(HEADER_USER_UUID);
                     httpHeaders.remove(HEADER_USER_ID);
                     httpHeaders.remove(HEADER_USER_NAME);
                     httpHeaders.remove(HEADER_EMAIL);
@@ -56,7 +56,7 @@ public class UserContextFilter implements GlobalFilter, Ordered {
                 .flatMap(auth -> {
                     // JWT에서 UUID 추출(Subject)
                     String userId = auth.getToken().getSubject();
-
+                    log.info("User id: {}", userId);
                     return webClient
                             .get()
                             .uri("/me")

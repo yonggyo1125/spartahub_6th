@@ -53,7 +53,7 @@ public class UserControllerTest {
 
     @Test
     void signUp_and_token_issue_test() throws Exception {
-        String email = UUID.randomUUID() + "@test.org";
+        String email = "test1@test.org";
         String password = "_aA123456";
 
         UserRequest.SignUp request = new UserRequest.SignUp();
