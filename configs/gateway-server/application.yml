@@ -3,6 +3,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
+          jwk-set-uri: "https://keycloak.code-factory.co.kr/realms/spartahub/protocol/openid-connect/certs"
           issuer-uri: "https://keycloak.code-factory.co.kr/realms/spartahub"
   cloud:
     gateway:
