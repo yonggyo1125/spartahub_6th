@@ -78,6 +78,10 @@ springdoc:
   paths-to-match:
     - /**
 
+openapi:
+  service:
+    url: ${OPENAPI_URL:localhost:10000}
+
 management:
   endpoints:
     web:
