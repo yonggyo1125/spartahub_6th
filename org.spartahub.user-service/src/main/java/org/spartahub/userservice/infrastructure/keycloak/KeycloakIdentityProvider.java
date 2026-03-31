@@ -36,6 +36,7 @@ public class KeycloakIdentityProvider implements IdentityProvider {
         user.setUsername(email.toLowerCase());
         user.setEmail(email);
         user.setEmailVerified(true); // 이메일 인증이 필요한 경우 false로 설정하고, 인증 완료 시 true로 변경한다.
+        user.setRequiredActions(Collections.emptyList()); // 강제 액션을 모두 제거
 
         // 비밀번호 설정
         CredentialRepresentation credential = getCredential(password);

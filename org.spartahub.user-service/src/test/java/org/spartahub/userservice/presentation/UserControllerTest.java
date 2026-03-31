@@ -8,6 +8,7 @@ import org.spartahub.userservice.domain.service.HubData;
 import org.spartahub.userservice.domain.service.HubProvider;
 import org.spartahub.userservice.domain.service.StoreData;
 import org.spartahub.userservice.domain.service.StoreProvider;
+import org.spartahub.userservice.presentation.dto.TokenRequest;
 import org.spartahub.userservice.presentation.dto.UserRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -23,6 +24,7 @@ import java.util.UUID;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @Slf4j
 @SpringBootTest
@@ -52,11 +54,13 @@ public class UserControllerTest {
     }
 
     @Test
-    void signUpTest() throws Exception {
-        log.info("테스트 시작");
+    void signUp_and_token_issue_test() throws Exception {
+        String email = UUID.randomUUID() + "@test.org";
+        String password = "_aA123456";
+
         UserRequest.SignUp request = new UserRequest.SignUp();
-        request.setEmail("test01@test.org");
-        request.setPassword("_aA123456");
+        request.setEmail(email);
+        request.setPassword(password);
         request.setName("테스트 사용자");
         request.setSlackId("U1234567");
         request.setType("HUB_MANAGER");
@@ -68,7 +72,16 @@ public class UserControllerTest {
         mockMvc.perform(post("/signup")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body)
-            ).andDo(print());
+            ).andDo(print())
+                .andExpect(status().isCreated());
+
+        // 토큰 발급 테스트
+        TokenRequest tokenRequest = new TokenRequest(email, password);
+        mockMvc.perform(post("/token")
+        .contentType(MediaType.APPLICATION_JSON)
+                .content(om.writeValueAsString(tokenRequest)))
+                .andDo(print());
+
 
     }
 }
