@@ -28,4 +28,13 @@ import org.spartahub.common.domain.BaseUserEntity;
 public class Hub extends BaseUserEntity {
     @EmbeddedId
     private HubId id;
+
+    @Version
+    private int version;
+
+    @Column(length=45, nullable=false)
+    public String name; // 허브명
+
+    
+
 }
