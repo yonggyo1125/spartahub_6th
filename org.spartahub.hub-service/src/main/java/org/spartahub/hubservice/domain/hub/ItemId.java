@@ -9,20 +9,20 @@ import java.io.Serializable;
 import java.util.UUID;
 
 @Embeddable
-public record HubId(
+public record ItemId(
         @JdbcTypeCode(SqlTypes.UUID)
         @Column(length=36, name="user_id")
         UUID id
 ) implements Serializable {
-    public static HubId of(UUID id) {
-        return new HubId(id);
+    public static ItemId of(UUID id) {
+        return new ItemId(id);
     }
 
-    public static HubId of() {
-        return new HubId(UUID.randomUUID());
+    public static ItemId of() {
+        return new ItemId(UUID.randomUUID());
     }
 
-    public static HubId fromString(String id) {
-        return new HubId(UUID.fromString(id));
+    public static ItemId fromString(String id) {
+        return new ItemId(UUID.fromString(id));
     }
 }

@@ -9,6 +9,8 @@ import org.spartahub.hubservice.domain.hub.exception.MasterOnlyException;
 import org.spartahub.hubservice.domain.hub.service.AddressResolver;
 import org.spartahub.hubservice.domain.hub.service.RoleCheck;
 
+import java.util.List;
+
 
 /**
  * 1. 허브 관리는 마스터 관리자(MASTER), 허브 관리자(HUB_MANAGER)에 의해 이루어 지며
@@ -38,6 +40,11 @@ public class Hub extends BaseUserEntity {
 
     @Embedded
     private HubLocation location;
+
+    // 허브에서 관리하는 상품
+    @OneToMany(fetch=FetchType.LAZY, cascade=CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "hub_id")
+    private List<HubItem> items;
 
     @Builder
     public Hub(String name, String address, AddressResolver addressResolver, RoleCheck roleCheck, HubEvents events) {

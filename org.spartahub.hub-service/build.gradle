@@ -38,6 +38,7 @@ ext {
 
 dependencies {
 	implementation 'com.github.yonggyo1125:common:0.0.10-SNAPSHOT'
+	implementation 'org.springframework.retry:spring-retry'
 
 	// Querydsl APT
 	annotationProcessor 'jakarta.annotation:jakarta.annotation-api'
