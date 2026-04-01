@@ -1,5 +1,6 @@
 package org.spartahub.gatewayserver.config;
 
+import io.micrometer.tracing.Tracer;
 import lombok.extern.slf4j.Slf4j;
 import org.spartahub.gatewayserver.response.User;
 import org.spartahub.gatewayserver.response.UserResponse;
@@ -24,7 +25,9 @@ import java.util.UUID;
 @Component
 public class UserContextFilter implements GlobalFilter, Ordered {
 
+    private final Tracer tracer;
     private final WebClient webClient;
+
     private static final String HEADER_TRACE_ID = "X-Trace-Id";
     private static final String HEADER_USER_UUID = "X-User-UUID";
     private static final String HEADER_USER_ID = "X-User-Id";
@@ -34,15 +37,19 @@ public class UserContextFilter implements GlobalFilter, Ordered {
     private static final String HEADER_USER_NAME = "X-User-Name";
     private static final String HEADER_ENABLED = "X-User-Enabled";
 
-    public UserContextFilter(WebClient.Builder webClientBuilder) {
+    public UserContextFilter(Tracer tracer, WebClient.Builder webClientBuilder) {
+        this.tracer = tracer;
+
         // 생성자에서 미리 빌드 (LoadBalancer 가 설정된 빌더여야 함)
         this.webClient = webClientBuilder.baseUrl("http://user-service").build();
     }
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        // 진입 시점에 Trace-Id 생성
-        String traceId = UUID.randomUUID().toString().substring(0, 8);
+        // 진입 시점에 Zipkin이 관리하는 현재 컨텍스트에서 Trace ID 추출, 없다면 임의 생성
+
+        String traceId = tracer.currentSpan() == null ? UUID.randomUUID().toString().substring(0, 8) : tracer.currentSpan().context().traceId();
+
         String path = exchange.getRequest().getPath().value();
         String method = exchange.getRequest().getMethod().name();
 
