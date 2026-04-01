@@ -1,4 +1,4 @@
 package org.spartahub.hubservice.domain.route;
 
-public class Route {
+public class HubRoute {
 }

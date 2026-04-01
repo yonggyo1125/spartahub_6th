@@ -1,12 +1,13 @@
 package org.spartahub.hubservice.domain.hub;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 import org.hibernate.annotations.SQLRestriction;
 import org.spartahub.common.domain.BaseUserEntity;
+import org.spartahub.hubservice.domain.hub.event.HubEvents;
+import org.spartahub.hubservice.domain.hub.exception.MasterOnlyException;
+import org.spartahub.hubservice.domain.hub.service.AddressResolver;
+import org.spartahub.hubservice.domain.hub.service.RoleCheck;
 
 
 /**
@@ -38,4 +39,63 @@ public class Hub extends BaseUserEntity {
     @Embedded
     private HubLocation location;
 
+    @Builder
+    public Hub(String name, String address, AddressResolver addressResolver, RoleCheck roleCheck, HubEvents events) {
+
+        // 권한 체크
+        checkAuthority(roleCheck);
+
+        this.id = HubId.of();
+
+        this.name = name; // 허브명
+
+        // 허브 주소 및 위도, 경도 처리
+        this.location = new HubLocation(address, addressResolver);
+
+        // 허브 변경 후속 처리 이벤트 호출
+        events.hubChanged(id);
+    }
+
+    // 허브 이름 변경
+    public void changeName(String name, RoleCheck roleCheck) {
+        checkAuthority(roleCheck);
+
+        this.name = name;
+    }
+
+    // 허브 주소 변경
+    public void changeAddress(String address, AddressResolver resolver, RoleCheck roleCheck, HubEvents events) {
+        checkAuthority(roleCheck);
+        
+        // 주소가 이전과 동일하다면 처리하지 않음
+        if (this.location.getAddress() != null && this.location.getAddress().equals(address)) {
+            return;
+        }
+
+        this.location = new HubLocation(address, resolver);
+
+        // 주소 변경 후 후속 처리를 위한 이벤트 호출
+        events.hubChanged(id);
+    }
+
+    // 허브 삭제
+    // 허브가 삭제되면 허브간 경로 조합 및 허브에 소속된 상품을 삭제합니다(삭제 후속 처리)
+    public void delete(RoleCheck roleCheck, HubEvents events) {
+        checkAuthority(roleCheck);
+
+        // 이미 삭제된 경우는 처리하지 않음
+        if (this.deletedAt != null) return;
+
+        super.delete(null); // deletedBy에는 MASTER 권한을 가진 로그인 사용자의 이메일로 업데이트 된다.
+
+        // 삭제 후속 처리를 위한 이벤트 호출
+        events.hubChanged(id);
+    }
+
+    // 허브 등록 수정, 삭제는 MASTER 관리자로 한정
+    private void checkAuthority(RoleCheck roleCheck) {
+        if (!roleCheck.hasRole(UserType.MASTER)) {
+            throw new MasterOnlyException();
+        }
+    }
 }

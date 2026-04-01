@@ -23,6 +23,7 @@ public class HubLocation {
     private double longitude; // 경로 - 세로선
 
     // 주소 정보는 필수 이며, 주소는 위도, 경도로 변환되어야 한다.
+    // 주소 정보가 업데이트 되면 허브간 이동 경로 조합이 업데이트 되어야 한다.
     protected HubLocation(String address, AddressResolver resolver) {
         if (!StringUtils.hasText(address)) {
             throw new BadRequestException("주소는 필수입력 값 입니다.");
