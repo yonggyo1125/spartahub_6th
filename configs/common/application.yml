@@ -16,7 +16,7 @@ spring:
         configs:
           default: # 기본 회로 차단기 설정
             slidingWindowType: COUNT_BASED  # 호출 횟수 기반으로 슬라이딩 윈도우 설정 (TIME_BASED도 가능)
-            slidingWindowSize: 100  # 상태 결정을 위해 고려할 최근 호출 수
+            slidingWindowSize: 50  # 상태 결정을 위해 고려할 최근 호출 수
             minimumNumberOfCalls: 10  # 회로 차단기가 결정을 내리기 위한 최소 호출 수
             permittedNumberOfCallsInHalfOpenState: 10  # 반개방 상태에서 허용되는 호출 수
             failureRateThreshold: 50  # 실패율이 50%를 초과하면 회로 차단 (% 기준)
@@ -29,7 +29,7 @@ feign:
   client:
     default: # 공통 설정
       connectTimeout: 5000
-      readTimeout: 5000
+      readTimeout: 2000
       loggerLevel: full
 
 
@@ -87,6 +87,12 @@ management:
     web:
       exposure:
         include: refresh,health,info,metrics
+  tracing:
+    sampling:
+      probability: 0.1
+    zipkin:
+      tracing:
+        endpoint: "${ZIPKIN_ENDPOINT:http://localhost:9411/api/v2/spans}"
 
 logging:
   level:

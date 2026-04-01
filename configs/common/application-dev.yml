@@ -11,6 +11,10 @@ spring:
       trust-store-location: ""
       trust-store-password: ""
 
+management:
+  tracing:
+    sampling:
+      probability: 1
 
 topics:
   user:
