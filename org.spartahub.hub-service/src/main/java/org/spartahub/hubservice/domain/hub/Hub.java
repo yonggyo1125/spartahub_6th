@@ -32,9 +32,10 @@ public class Hub extends BaseUserEntity {
     @Version
     private int version;
 
-    @Column(length=45, nullable=false)
-    public String name; // 허브명
+    @Column(name="hub_name", length=45, nullable=false)
+    private String name; // 허브명
 
-    
+    @Embedded
+    private HubLocation location;
 
 }
