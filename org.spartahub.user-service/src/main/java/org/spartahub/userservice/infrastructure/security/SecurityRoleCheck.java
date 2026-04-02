@@ -18,7 +18,7 @@ public class SecurityRoleCheck implements RoleCheck {
 
     @Override
     public boolean hasRole(UserType type) {
-        return !hasRole(List.of(type));
+        return hasRole(List.of(type));
     }
 
     @Override
