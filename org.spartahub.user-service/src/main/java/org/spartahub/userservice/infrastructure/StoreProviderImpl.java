@@ -1,6 +1,7 @@
 package org.spartahub.userservice.infrastructure;
 
 import lombok.RequiredArgsConstructor;
+import org.spartahub.common.response.CommonResponse;
 import org.spartahub.userservice.domain.service.StoreData;
 import org.spartahub.userservice.domain.service.StoreProvider;
 import org.spartahub.userservice.infrastructure.client.StoreClient;
@@ -17,7 +18,7 @@ public class StoreProviderImpl implements StoreProvider {
 
     @Override
     public StoreData get(UUID storeId) {
-        StoreResponse res = client.getStore(storeId);
-        return res == null || res.id() == null ? null : new StoreData(res.name(), res.address());
+        CommonResponse<StoreResponse> res = client.getStore(storeId);
+        return res == null || res.data() == null || res.data().id() == null ? null : new StoreData(res.data().name(), res.data().address());
     }
 }

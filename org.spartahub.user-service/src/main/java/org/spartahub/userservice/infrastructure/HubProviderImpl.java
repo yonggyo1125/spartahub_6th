@@ -1,6 +1,7 @@
 package org.spartahub.userservice.infrastructure;
 
 import lombok.RequiredArgsConstructor;
+import org.spartahub.common.response.CommonResponse;
 import org.spartahub.userservice.domain.service.HubData;
 import org.spartahub.userservice.domain.service.HubProvider;
 import org.spartahub.userservice.infrastructure.client.HubClient;
@@ -17,7 +18,7 @@ public class HubProviderImpl implements HubProvider {
 
     @Override
     public HubData get(UUID hubId) {
-        HubResponse res = client.getHub(hubId);
-        return res == null || res.id() == null ? null : new HubData(res.name(), res.address());
+        CommonResponse<HubResponse> res = client.getHub(hubId);
+        return res == null || res.data() == null || res.data().id() == null ? null : new HubData(res.data().name(), res.data().address());
     }
 }

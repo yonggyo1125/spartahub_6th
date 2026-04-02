@@ -1,5 +1,6 @@
 package org.spartahub.userservice.infrastructure.client;
 
+import org.spartahub.common.response.CommonResponse;
 import org.spartahub.userservice.infrastructure.client.dto.HubResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,5 +14,5 @@ import java.util.UUID;
 )
 public interface HubClient {
     @GetMapping("/{hubId}/details")
-    HubResponse getHub(@PathVariable("hubId") UUID hubId);
+    CommonResponse<HubResponse> getHub(@PathVariable("hubId") UUID hubId);
 }
