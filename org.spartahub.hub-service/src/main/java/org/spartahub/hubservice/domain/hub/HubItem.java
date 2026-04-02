@@ -5,6 +5,7 @@ import lombok.*;
 import org.hibernate.annotations.SQLRestriction;
 import org.spartahub.common.domain.BaseUserEntity;
 import org.spartahub.common.exception.BadRequestException;
+import org.spartahub.hubservice.domain.hub.service.ItemProvider;
 import org.spartahub.hubservice.domain.hub.service.StoreProvider;
 import org.springframework.util.StringUtils;
 
@@ -27,10 +28,8 @@ public class HubItem extends BaseUserEntity {
     @Column(length=15, nullable=false)
     private ItemStatus status;
 
-    private String itemCode; // 업체에서 관리하는 상품 코드, 상품 정보 업데이트 기준
-
-    @Column(length=150, name="item_name")
-    private String name;
+    @Embedded
+    private ItemDetail detail; // 상품 상세 정보
 
     @Column(name="item_stock")
     private int stock; // 재고
@@ -39,9 +38,9 @@ public class HubItem extends BaseUserEntity {
     private Store store;
 
     @Builder
-    protected HubItem(String name, int stock, UUID storeId, StoreProvider storeProvider) {
-        if (!StringUtils.hasText(name)) {
-            throw new BadRequestException("상품명은 필수입력 값 입니다.");
+    protected HubItem(String itemCode, int stock, UUID storeId, StoreProvider storeProvider, ItemProvider  itemProvider) {
+        if (!StringUtils.hasText(itemCode)) {
+            throw new BadRequestException("상품코드는 필수입력 값 입니다.");
         }
 
         if (stock < 0) {
@@ -50,7 +49,8 @@ public class HubItem extends BaseUserEntity {
 
         this.id = ItemId.of();
         this.stock = stock;
-        this.name = name.trim();
+
+        this.detail = new ItemDetail(storeId, itemCode, itemProvider); // 업체 상품 정보(상품 코드, 상품명, 상품 메모)
         this.store = new Store(storeId, storeProvider);
 
         // 최초 상품 등록시 상품 준비중 상태(주문 불가)
@@ -98,5 +98,10 @@ public class HubItem extends BaseUserEntity {
             throw new BadRequestException("추가할 재고는 1개 이상이어야 합니다.");
         }
         this.stock += quantity;
+    }
+
+    // 상품 삭제(SoftDelete)
+    public void delete() {
+        super.delete(null);
     }
 }

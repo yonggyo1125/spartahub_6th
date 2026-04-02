@@ -48,7 +48,7 @@ public class HubService {
     // 허브 이름 변경
     @Transactional
     public void changeName(UUID hubId, String newName) {
-        getHub(hubId).changeName(newName, roleCheck);
+        getHub(hubId).changeName(newName, roleCheck, hubEvents);
     }
 
     // 허브 주소 변경

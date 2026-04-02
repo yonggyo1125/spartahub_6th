@@ -8,8 +8,11 @@ import org.spartahub.hubservice.domain.hub.event.HubEvents;
 import org.spartahub.hubservice.domain.hub.exception.MasterOnlyException;
 import org.spartahub.hubservice.domain.hub.service.AddressResolver;
 import org.spartahub.hubservice.domain.hub.service.RoleCheck;
+import org.spartahub.hubservice.domain.hub.service.StoreProvider;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 
 /**
@@ -45,7 +48,7 @@ public class Hub extends BaseUserEntity {
     // 허브에서 관리하는 상품
     @OneToMany(fetch=FetchType.LAZY, cascade=CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "hub_id")
-    private List<HubItem> items;
+    private List<HubItem> items = new ArrayList<>();
 
     @Builder
     public Hub(String name, String address, AddressResolver addressResolver, RoleCheck roleCheck, HubEvents events) {
@@ -61,14 +64,43 @@ public class Hub extends BaseUserEntity {
         this.location = new HubLocation(address, addressResolver);
 
         // 허브 변경 후속 처리 이벤트 호출
-        events.hubChanged(this);
+        events.hubChanged(this, true);
+    }
+
+    public void addItem(String itemCode, int stock, UUID storeId, StoreProvider storeProvider, RoleCheck roleCheck) {
+        // 권한 체크
+        checkAuthority(roleCheck);
+
+        HubItem item = HubItem.builder()
+                .itemCode(itemCode)
+                .stock(stock)
+                .storeId(storeId)
+                .storeProvider(storeProvider)
+                .build();
+
+        this.items.add(item);
+    }
+
+    // 상품 제거(SoftDelete)
+    public void removeItem(ItemId itemId, RoleCheck roleCheck) {
+        checkAuthority(roleCheck);
+
+        this.items.stream()
+                .filter(item -> item.getId().equals(itemId))
+                .findFirst()
+                .ifPresent(HubItem::delete);
     }
 
     // 허브 이름 변경
-    public void changeName(String name, RoleCheck roleCheck) {
+    public void changeName(String name, RoleCheck roleCheck, HubEvents events) {
         checkAuthority(roleCheck);
 
+        if (this.name.equals(name)) return;
+
         this.name = name;
+
+        // 주소 변경 후 후속 처리를 위한 이벤트 호출
+        events.hubChanged(this, false);
     }
 
     // 허브 주소 변경
@@ -83,7 +115,7 @@ public class Hub extends BaseUserEntity {
         this.location = new HubLocation(address, resolver);
 
         // 주소 변경 후 후속 처리를 위한 이벤트 호출
-        events.hubChanged(this);
+        events.hubChanged(this, true);
     }
 
     // 허브 삭제
@@ -97,7 +129,7 @@ public class Hub extends BaseUserEntity {
         super.delete(null); // deletedBy에는 MASTER 권한을 가진 로그인 사용자의 이메일로 업데이트 된다.
 
         // 삭제 후속 처리를 위한 이벤트 호출
-        events.hubChanged(this);
+        events.hubChanged(this, true);
     }
 
     // 허브 등록 수정, 삭제는 MASTER 관리자로 한정

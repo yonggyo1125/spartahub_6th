@@ -6,4 +6,5 @@ import java.util.UUID;
 
 public interface ItemProvider {
     ItemData getItem(UUID storeId, String code);
+    boolean isDuplicated(UUID storeId, String code);
 }
