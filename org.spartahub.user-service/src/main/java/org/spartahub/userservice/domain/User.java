@@ -244,7 +244,7 @@ public class User extends BaseUserEntity {
 
      // MASTER 권한 체크
      private void checkMaster(RoleCheck roleCheck) {
-         if (roleCheck.hasRole(MASTER)) {
+         if (!roleCheck.hasRole(MASTER)) {
              throw new ForbiddenException(MASTER.getDescription() + " 권한이 필요합니다.");
          }
      }
