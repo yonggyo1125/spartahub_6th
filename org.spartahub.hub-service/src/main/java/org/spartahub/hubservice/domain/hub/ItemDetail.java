@@ -6,6 +6,10 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.spartahub.common.exception.BadRequestException;
+import org.spartahub.hubservice.domain.hub.service.ItemProvider;
+
+import java.util.UUID;
 
 @Getter
 @ToString
@@ -20,4 +24,11 @@ public class ItemDetail {
 
     @Column(name="item_memo")
     private String memo; // 상품 메모
+
+    protected ItemDetail(UUID storeId, ItemProvider provider) {
+        if (storeId == null) {
+            throw new BadRequestException("업체 ID는 필수입력 값 입니다.");
+        }
+    }
+
 }
