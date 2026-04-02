@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.spartahub.common.exception.BadRequestException;
 import org.spartahub.hubservice.domain.hub.exception.StoreNotFoundException;
-import org.spartahub.hubservice.domain.hub.service.StoreData;
+import org.spartahub.hubservice.domain.hub.service.dto.StoreData;
 import org.spartahub.hubservice.domain.hub.service.StoreProvider;
 
 import java.util.UUID;

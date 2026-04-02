@@ -1,7 +1,7 @@
 package org.spartahub.hubservice.domain.hub.event;
 
-import org.spartahub.hubservice.domain.hub.HubId;
+import org.spartahub.hubservice.domain.hub.Hub;
 
 public interface HubEvents {
-    void hubChanged(HubId hubId);
+    void hubChanged(Hub hub);
 }

@@ -11,7 +11,7 @@ import java.util.UUID;
 @Embeddable
 public record ItemId(
         @JdbcTypeCode(SqlTypes.UUID)
-        @Column(length=36, name="user_id")
+        @Column(length=36, name="item_id")
         UUID id
 ) implements Serializable {
     public static ItemId of(UUID id) {

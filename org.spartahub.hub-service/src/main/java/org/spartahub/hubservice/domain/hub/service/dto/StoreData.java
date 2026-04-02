@@ -1,4 +1,4 @@
-package org.spartahub.hubservice.domain.hub.service;
+package org.spartahub.hubservice.domain.hub.service.dto;
 
 import java.util.UUID;
 

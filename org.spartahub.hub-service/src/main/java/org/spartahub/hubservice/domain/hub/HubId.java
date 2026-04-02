@@ -11,7 +11,7 @@ import java.util.UUID;
 @Embeddable
 public record HubId(
         @JdbcTypeCode(SqlTypes.UUID)
-        @Column(length=36, name="user_id")
+        @Column(length=36, name="hub_id")
         UUID id
 ) implements Serializable {
     public static HubId of(UUID id) {

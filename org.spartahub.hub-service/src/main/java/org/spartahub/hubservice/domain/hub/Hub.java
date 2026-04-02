@@ -21,6 +21,7 @@ import java.util.List;
  * 2. 허브는 전국 17개가 존재하여, 추가, 수정, 삭제가 가능해야 한다.
  * 3. 허브간 최적의 이동 경로를 산출하게 되므로 그 기반이 되는 주소, 위도, 경도는 필수
  * 4. 허브가 추가, 수정, 삭제가 되면 허브 경로 역시 재산출 되어야 한다(Route)
+ * 5. 허브 정보 변경시 다른 애그리거트에서도 허브 정보를 업데이트 할 수 있도록 메세지 발행한다.
  */
 @Getter
 @Entity @ToString
@@ -60,7 +61,7 @@ public class Hub extends BaseUserEntity {
         this.location = new HubLocation(address, addressResolver);
 
         // 허브 변경 후속 처리 이벤트 호출
-        events.hubChanged(id);
+        events.hubChanged(this);
     }
 
     // 허브 이름 변경
@@ -82,7 +83,7 @@ public class Hub extends BaseUserEntity {
         this.location = new HubLocation(address, resolver);
 
         // 주소 변경 후 후속 처리를 위한 이벤트 호출
-        events.hubChanged(id);
+        events.hubChanged(this);
     }
 
     // 허브 삭제
@@ -96,7 +97,7 @@ public class Hub extends BaseUserEntity {
         super.delete(null); // deletedBy에는 MASTER 권한을 가진 로그인 사용자의 이메일로 업데이트 된다.
 
         // 삭제 후속 처리를 위한 이벤트 호출
-        events.hubChanged(id);
+        events.hubChanged(this);
     }
 
     // 허브 등록 수정, 삭제는 MASTER 관리자로 한정
