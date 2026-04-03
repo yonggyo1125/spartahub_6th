@@ -13,7 +13,14 @@ import java.util.UUID;
 
 @Getter
 @Entity @ToString
-@Table(name="P_HUB_ITEM")
+@Table(
+        name="P_HUB_ITEM",
+        indexes = {
+                @Index(name = "idx_hub_item_store_code_deleted", columnList = "store_id, item_code, deleted_at"),
+                @Index(name = "idx_hub_item_hub_id", columnList = "hub_id"),
+                @Index(name = "idx_hub_item_status", columnList = "status")
+        }
+)
 @Access(AccessType.FIELD)
 @SQLRestriction("deleted_at IS NULL")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

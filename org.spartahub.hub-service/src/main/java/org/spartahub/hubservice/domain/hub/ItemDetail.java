@@ -49,7 +49,7 @@ public class ItemDetail {
 
         ItemData data = provider.getItem(storeId, code);
         if (data == null || !StringUtils.hasText(data.code())) {
-            throw new ItemNotFoundException(code);
+            throw new ItemNotFoundException(storeId, code);
         }
 
         this.code = data.code();
