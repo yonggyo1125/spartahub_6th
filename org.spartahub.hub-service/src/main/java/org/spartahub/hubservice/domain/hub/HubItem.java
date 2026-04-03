@@ -64,9 +64,6 @@ public class HubItem extends BaseUserEntity {
         changePreparing();
     }
 
-    // 상품명 변경
-
-
     // 판매중 상태로 변경
     public void changeOnSale() {
         if (this.stock < 1) {
