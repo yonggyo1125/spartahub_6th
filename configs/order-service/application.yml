@@ -24,3 +24,7 @@ logging:
   level:
     org.hibernate.type: trace
     org.hibernate.orm.jdbc.bind: trace
+
+message:
+  test1: test1
+  test2: test2
