@@ -26,5 +26,5 @@ logging:
     org.hibernate.orm.jdbc.bind: trace
 
 message:
-  test1: test31
-  test2: test43
+  test1: test1
+  test2: test2
