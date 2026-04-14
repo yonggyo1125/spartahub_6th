@@ -8,23 +8,6 @@ spring:
       circuitbreaker:
         enabled: true
 
-    circuitbreaker:
-      resilience4j:
-        enabled: true  # Resilience4j 회로 차단기 활성화
-
-        # 공통 템플릿(모든 인스턴스의 기본 값)
-        configs:
-          default: # 기본 회로 차단기 설정
-            slidingWindowType: COUNT_BASED  # 호출 횟수 기반으로 슬라이딩 윈도우 설정 (TIME_BASED도 가능)
-            slidingWindowSize: 2  # 상태 결정을 위해 고려할 최근 호출 수
-            minimumNumberOfCalls: 2  # 회로 차단기가 결정을 내리기 위한 최소 호출 수
-            permittedNumberOfCallsInHalfOpenState: 1  # 반개방 상태에서 허용되는 호출 수
-            failureRateThreshold: 50  # 실패율이 50%를 초과하면 회로 차단 (% 기준)
-            waitDurationInOpenState: 5s  # 회로가 열린 상태로 유지되는 시간 (30초)
-            recordExceptions: # 실패로 간주할 예외 목록
-              - java.lang.RuntimeException
-              - org.springframework.web.client.HttpServerErrorException
-
 feign:
   client:
     default: # 공통 설정
@@ -35,6 +18,22 @@ feign:
 
 # Resilience4j 개별 모듈 설정 (Retry, Bulkhead, RateLimiter)
 resilience4j:
+  circuitbreaker:
+    configs:
+      default: # 기본 회로 차단기 설정
+        slidingWindowType: COUNT_BASED  # 호출 횟수 기반으로 슬라이딩 윈도우 설정 (TIME_BASED도 가능)
+        slidingWindowSize: 2  # 상태 결정을 위해 고려할 최근 호출 수
+        minimumNumberOfCalls: 2  # 회로 차단기가 결정을 내리기 위한 최소 호출 수
+        permittedNumberOfCallsInHalfOpenState: 1  # 반개방 상태에서 허용되는 호출 수
+        failureRateThreshold: 50  # 실패율이 50%를 초과하면 회로 차단 (% 기준)
+        waitDurationInOpenState: 5s  # 회로가 열린 상태로 유지되는 시간 (30초)
+        recordExceptions: # 실패로 간주할 예외 목록
+          - java.lang.RuntimeException
+          - org.springframework.web.client.HttpServerErrorException
+    instances:
+      order-service:
+        baseConfig: default
+
   retry:  # 재시도 설정
     configs:
       default:  # 기본 재시도 설정
@@ -44,6 +43,9 @@ resilience4j:
         exponentialBackoffMultiplier: 2.0  # 각 재시도마다 대기 시간이 2배로 증가
         retryExceptions:  # 재시도할 예외 목록
           - java.lang.RuntimeException
+    instances:
+      order-service:
+        baseConfig: default
 
   bulkhead:  # 벌크헤드 설정 (동시 호출 제한)
     configs:
@@ -52,6 +54,9 @@ resilience4j:
         coreThreadPoolSize: 5  # 스레드풀의 기본 스레드 수 (항상 활성 상태로 유지)
         maxThreadPoolSize: 10  # 스레드풀의 최대 스레드 수 (부하 증가 시 확장)
         queueCapacity: 50  # 모든 스레드가 사용 중일 때 대기할 수 있는 요청 수
+    instances:
+      order-service:
+        baseConfig: default
 
   ratelimiter:  # 속도 제한 설정
     configs:
@@ -59,7 +64,9 @@ resilience4j:
         limitForPeriod: 50  # 주기당 최대 50개 요청 허용
         limitRefreshPeriod: 1s  # 제한이 1초마다 초기화됨
         timeoutDuration: 0ms  # 허가 대기 시간 (0ms는 대기 없이 즉시 거부)
-
+    instances:
+      order-service:
+        baseConfig: default
 
 # OPEN DOC API 설정
 springdoc:
