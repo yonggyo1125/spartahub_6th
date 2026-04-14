@@ -54,7 +54,7 @@ spring:
             - Path=/v1/products/**
           filters:
             - "RewritePath=/v1/products(?:/(?<path>.*))?, /\\${path}"
-            -
+
         - id: order-service
           uri: lb://order-service
           predicates:
