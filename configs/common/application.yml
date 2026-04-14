@@ -47,10 +47,11 @@ resilience4j:
       order-service:
         baseConfig: default
 
-  bulkhead:  # 벌크헤드 설정 (동시 호출 제한)
+  # 벌크헤드 설정 (동시 호출 제한)
+  # THREADPOOL 방식을 사용하므로 thread-pool-bulkhead 섹션을 사용합니다.
+  thread-pool-bulkhead:
     configs:
       default:  # 기본 벌크헤드 설정
-        type: THREADPOOL  # 스레드풀 타입 벌크헤드 사용 (SEMAPHORE 대신)
         coreThreadPoolSize: 5  # 스레드풀의 기본 스레드 수 (항상 활성 상태로 유지)
         maxThreadPoolSize: 10  # 스레드풀의 최대 스레드 수 (부하 증가 시 확장)
         queueCapacity: 50  # 모든 스레드가 사용 중일 때 대기할 수 있는 요청 수
@@ -67,6 +68,7 @@ resilience4j:
     instances:
       order-service:
         baseConfig: default
+
 
 # OPEN DOC API 설정
 springdoc:
@@ -94,6 +96,9 @@ management:
     web:
       exposure:
         include: refresh,health,info,metrics
+  endpoint:
+    health:
+      show-details: always # 상세한 서킷 상태 모니터링을 위해 추천
   tracing:
     sampling:
       probability: 0.1
