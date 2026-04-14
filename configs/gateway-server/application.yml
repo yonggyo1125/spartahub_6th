@@ -58,9 +58,9 @@ spring:
         - id: order-service
           uri: lb://order-service
           predicates:
-            - Path=/v1/order/**
+            - Path=/v1/orders/**
           filters:
-            - "RewritePath=/v1/order(?:/(?<path>.*))?, /\\${path}"
+            - "RewritePath=/v1/orders(?:/(?<path>.*))?, /\\${path}"
 
         - id: delivery-service
           uri: lb://delivery-service
