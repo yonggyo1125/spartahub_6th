@@ -86,3 +86,16 @@ springdoc:
 
       - url: /hub-service/v3/api-docs
         name: HUB API
+
+management:
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    export:
+      prometheus:
+        enabled: true
+  endpoint:
+    prometheus:
+      enabled: true
+    health:
+      show-details: always
