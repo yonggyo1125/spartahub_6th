@@ -96,9 +96,23 @@ management:
     web:
       exposure:
         include: refresh,health,info,metrics,prometheus
+
   endpoint:
     health:
       show-details: always # 상세한 서킷 상태 모니터링
+
+    prometheus:
+      enabled: true
+    metrics:
+      enabled: true
+
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    tags:
+      application: ${spring.application.name}
+
   tracing:
     sampling:
       probability: 1
