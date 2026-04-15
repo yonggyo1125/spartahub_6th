@@ -98,7 +98,7 @@ management:
         include: refresh,health,info,metrics
   endpoint:
     health:
-      show-details: always # 상세한 서킷 상태 모니터링을 위해 추천
+      show-details: always # 상세한 서킷 상태 모니터링
   tracing:
     sampling:
       probability: 0.1
